@@ -1,4 +1,4 @@
-daestruct
-=========
+libdaestruct
+============
 
-DAE structural analysis in C++
+Structural analysis of DAEs
