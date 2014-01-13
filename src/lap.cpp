@@ -37,7 +37,6 @@
 
 #include "lap.hpp"
 #include "prettyprint.hpp"
-#include <climits>
 
 std::ostream& operator<<(std::ostream& o, const solution& s) {
   o << "solution " << 
@@ -101,12 +100,11 @@ solution lap(const sigma_matrix& assigncost) {
       if (matches[i] == 1)   // transfer reduction from rows that are assigned once.
       {
         j1 = rowsol[i]; 
-        min = INT_MAX;
+        min = BIG;
         for (j = 0; j < dim; j++)  
           if (j != j1)
-	    if ( ((long)assigncost(i,j)) - (long)v[j] < INT_MAX)
-	      if (assigncost(i,j) - v[j] < min)
-		min = assigncost(i,j) - v[j];
+	    if (assigncost(i,j) - v[j] < min)
+	      min = assigncost(i,j) - v[j];
         v[j1] = v[j1] - min;
       }
 
@@ -129,7 +127,7 @@ solution lap(const sigma_matrix& assigncost) {
       // find minimum and second minimum reduced cost over columns.
       umin = assigncost(i,0) - v[0]; 
       j1 = 0; 
-      usubmin = INT_MAX;
+      usubmin = BIG;
       for (j = 1; j < dim; j++) 
       {
         h = assigncost(i,j) - v[j];

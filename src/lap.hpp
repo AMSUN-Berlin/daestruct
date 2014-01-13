@@ -22,6 +22,8 @@
 
 #include <iostream>
 #include <vector>
+#include <climits>
+
 #include "sigma_matrix.hpp"
 
 struct solution {

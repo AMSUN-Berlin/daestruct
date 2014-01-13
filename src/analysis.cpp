@@ -70,12 +70,12 @@ namespace daestruct {
       for(unsigned int i = 0; i < dimension; i++)
 	mkSigma(i, setter);
 
-      //std::cout << cost << std::endl;
+      std::cout << cost << std::endl;
 
       /* solve linear assignment problem */
       solution assignment = lap(cost);
 
-      //std::cout << assignment << std::endl;
+      std::cout << assignment << std::endl;
 
       AnalysisResult result;
       result.c.resize(dimension);
