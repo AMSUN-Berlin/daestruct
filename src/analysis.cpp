@@ -60,7 +60,7 @@ namespace daestruct {
     }
 
     AnalysisResult InputProblem::pryceAlgorithm() const {
-      compressed_matrix<int> cost;
+      compressed_matrix<int> cost(dimension, dimension, 4*dimension);
 
       incidence_setter setter =  [&cost] (int i, int j, int s) { cost(i,j) = s; };
 

@@ -20,11 +20,16 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/parameterized_test.hpp>
 
+#include "pendulumAnalysis.hpp"
+
 using namespace boost::unit_test;
+
+using namespace daestruct::test;
 
 test_suite*
 init_unit_test_suite( int argc, char* argv[] ) {
-
+  framework::master_test_suite().
+        add( BOOST_TEST_CASE( &analyzePendulum ) );
   return 0;
 }
 
