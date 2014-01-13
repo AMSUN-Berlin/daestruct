@@ -20,36 +20,38 @@
 #include <daestruct/analysis.hpp>
 
 #include <vector>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
 
 #include "lap.hpp"
-
-using namespace boost::numeric::ublas;
+#include "prettyprint.hpp"
+#include <iostream>
 
 namespace daestruct {
   namespace analysis {
-
-    using namespace boost::numeric::ublas;
   
     void solveByFixedPoint(const std::vector<int>& assignment,  
-			   const compressed_matrix<int>& sigma,
+			   const sigma_matrix& sigma,
 			   std::vector<int>& c, std::vector<int>& d) {
       bool converged = false;
 
       while (!converged) {
 	converged = true;
-	for (unsigned int j = 0; j < sigma.size1(); j++) {
+	for (unsigned long int j = 0; j < sigma.dimension; j++) {
 	  int max = 0;
-	  for (unsigned int i = 0; i < sigma.size2(); i++) {
-	    const int a = sigma(i, j) + d[i];
-	    max = max >= a ? max : a;
+	  
+	  //TODO: iterate only over set fields in sigma!
+	  for (unsigned long int i = 0; i < sigma.dimension; i++) {
+	    if (sigma(i,j) != INT_MAX) {
+	      const int a = -sigma(i, j) + d[i];
+	      max = max >= a ? max : a;
+	    }
 	  }
+
 	  c[j] = max;
 	}
 
-	for (unsigned int i = 0; i < sigma.size1(); i++) {
+	for (unsigned long int i = 0; i < sigma.dimension; i++) {
 	  const int j = assignment[i];
-	  const int c2 = d[j] - sigma(i, j);
+	  const int c2 = c[j] + sigma(i, j);
 	  
 	  if (d[i] != c2)
 	    converged = false;
@@ -60,22 +62,31 @@ namespace daestruct {
     }
 
     AnalysisResult InputProblem::pryceAlgorithm() const {
-      compressed_matrix<int> cost(dimension, dimension, 4*dimension);
+      sigma_matrix cost(dimension);
 
-      incidence_setter setter =  [&cost] (int i, int j, int s) { cost(i,j) = s; };
+      incidence_setter setter =  [&cost] (int i, int j, int s) { cost.insert(i,j, -s); };
 
       /* create cost matrix via callback */
       for(unsigned int i = 0; i < dimension; i++)
 	mkSigma(i, setter);
 
+      //std::cout << cost << std::endl;
+
       /* solve linear assignment problem */
       solution assignment = lap(cost);
+
+      //std::cout << assignment << std::endl;
 
       AnalysisResult result;
       result.c.resize(dimension);
       result.d.resize(dimension);
 
-      /* run fix-point algorithm */
+      for (int i = 0; i < dimension; i++) {
+	result.c[i] = -1 * assignment.v[i];
+	result.d[i] = assignment.u[i];
+      }  
+
+      /* run fix-point algorithm TODO: is this necessary? we already have the duals.*/
       solveByFixedPoint(assignment.rowsol, cost, result.c, result.d);
 
       return result;

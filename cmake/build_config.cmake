@@ -8,7 +8,7 @@ add_definitions(
   -std=c++11
   -march=native
   -Wall
-  -O3
+  #-O3
   -g
 )
 

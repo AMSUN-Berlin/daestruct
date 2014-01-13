@@ -36,13 +36,21 @@
 */
 
 #include "lap.hpp"
+#include "prettyprint.hpp"
 #include <climits>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
 
-using namespace boost::numeric::ublas;
+std::ostream& operator<<(std::ostream& o, const solution& s) {
+  o << "solution " << 
+    "{ cost=" << s.cost << 
+    ", rowsol=" << s.rowsol << 
+    ", colsol=" << s.colsol <<
+    ", u=" << s.u <<
+    ", v=" << s.v << "}";
+  return o;
+}
 
-solution lap(const compressed_matrix<int>& assigncost) {
-  const long dim = assigncost.size1();
+solution lap(const sigma_matrix& assigncost) {
+  const long dim = assigncost.dimension;
 
   std::vector<int> u(dim),v(dim),rowsol(dim),colsol(dim);
   
@@ -96,8 +104,9 @@ solution lap(const compressed_matrix<int>& assigncost) {
         min = INT_MAX;
         for (j = 0; j < dim; j++)  
           if (j != j1)
-            if (assigncost(i,j) - v[j] < min) 
-              min = assigncost(i,j) - v[j];
+	    if ( ((long)assigncost(i,j)) - (long)v[j] < INT_MAX)
+	      if (assigncost(i,j) - v[j] < min)
+		min = assigncost(i,j) - v[j];
         v[j1] = v[j1] - min;
       }
 

@@ -80,8 +80,8 @@ namespace daestruct {
 
       const AnalysisResult res = pendulum.pryceAlgorithm();      
 
-      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,0,0}) );
-      BOOST_CHECK_EQUAL( res.d, std::vector<int>({0,2,2}) );
+      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,2,0}) );
+      BOOST_CHECK_EQUAL( res.d, std::vector<int>({2,0,0}) );
     }
     
   }

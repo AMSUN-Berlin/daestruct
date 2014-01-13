@@ -20,8 +20,9 @@
 #ifndef DAESTRUCT_LAP_HPP
 #define DAESTRUCT_LAP_HPP
 
+#include <iostream>
 #include <vector>
-#include <boost/numeric/ublas/matrix.hpp>
+#include "sigma_matrix.hpp"
 
 struct solution {
   int cost;
@@ -34,6 +35,8 @@ struct solution {
 /**
  * Solve the integer linear assignment problem defined by the cost matrix
  */
-solution lap(const boost::numeric::ublas::compressed_matrix<int>& cost);
+solution lap(const sigma_matrix& cost);
+
+std::ostream& operator<<(std::ostream& o, const solution& s);
 
 #endif
