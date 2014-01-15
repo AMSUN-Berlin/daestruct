@@ -17,27 +17,22 @@
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/parameterized_test.hpp>
+#ifndef DAESTRUCT_TEST_PENDULUM_ANALYSIS_HPP
+#define DAESTRUCT_TEST_PENDULUM_ANALYSIS_HPP
 
-#include "pendulumAnalysis.hpp"
-#include "circuitAnalysis.hpp"
+namespace daestruct {
+  namespace test {
 
-using namespace boost::unit_test;
+    /**
+     * Run structural analysis of the well-known cartesian pendulum
+     */
+    void analyzePendulum();
 
-using namespace daestruct::test;
-
-test_suite*
-init_unit_test_suite( int argc, char* argv[] ) {
-  framework::master_test_suite().
-        add( BOOST_TEST_CASE( &analyzePendulum ) );
-
-  framework::master_test_suite().
-        add( BOOST_TEST_CASE( &analyzeModelicaPendulum ) );
-
-  framework::master_test_suite().
-        add( BOOST_TEST_CASE( &analyzeCircuit1 ) );
-
-  return 0;
+    /**
+     * Run structural analysis of the well-known cartesian pendulum,
+     * described as in Modelica (i.e. maximum source derivative = 1)
+     */
+    void analyzeModelicaPendulum();
+  }
 }
-
+#endif

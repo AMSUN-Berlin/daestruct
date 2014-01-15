@@ -40,7 +40,7 @@ namespace daestruct {
 	  
 	  //TODO: iterate only over set fields in sigma!
 	  for (unsigned long int i = 0; i < sigma.dimension; i++) {
-	    if (sigma(i,j) != INT_MAX) {
+	    if (sigma(i,j) != BIG) {
 	      const int a = -sigma(i, j) + d[i];
 	      max = max >= a ? max : a;
 	    }
@@ -81,13 +81,9 @@ namespace daestruct {
       result.c.resize(dimension);
       result.d.resize(dimension);
 
-      for (int i = 0; i < dimension; i++) {
-	result.c[i] = -1 * assignment.v[i];
-	result.d[i] = assignment.u[i];
-      }  
-
-      /* run fix-point algorithm TODO: is this necessary? we already have the duals.*/
+      /* run fix-point algorithm */
       solveByFixedPoint(assignment.rowsol, cost, result.c, result.d);
+      std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
 
       return result;
     }

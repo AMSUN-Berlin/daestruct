@@ -14,4 +14,5 @@ set(srcs ${srcs_dir}/analysis.cpp
 #Project tests
 set(test_sources ${tests_dir}/boostTests.cpp 
   ${tests_dir}/pendulumAnalysis.cpp 
+  ${tests_dir}/circuitAnalysis.cpp 
   )

@@ -35,6 +35,7 @@
 
 */
 
+#include <iostream>
 #include "lap.hpp"
 #include "prettyprint.hpp"
 
