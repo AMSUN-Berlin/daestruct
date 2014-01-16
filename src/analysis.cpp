@@ -62,18 +62,10 @@ namespace daestruct {
     }
 
     AnalysisResult InputProblem::pryceAlgorithm() const {
-      sigma_matrix cost(dimension);
-
-      incidence_setter setter =  [&cost] (int i, int j, int s) { cost.insert(i,j, -s); };
-
-      /* create cost matrix via callback */
-      for(unsigned int i = 0; i < dimension; i++)
-	mkSigma(i, setter);
-
-      std::cout << cost << std::endl;
+      std::cout << sigma << std::endl;
 
       /* solve linear assignment problem */
-      solution assignment = lap(cost);
+      solution assignment = lap(sigma);
 
       std::cout << assignment << std::endl;
 
@@ -82,7 +74,7 @@ namespace daestruct {
       result.d.resize(dimension);
 
       /* run fix-point algorithm */
-      solveByFixedPoint(assignment.rowsol, cost, result.c, result.d);
+      solveByFixedPoint(assignment.rowsol, sigma, result.c, result.d);
       std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
 
       return result;

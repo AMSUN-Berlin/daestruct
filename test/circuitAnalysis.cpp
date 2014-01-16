@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <daestruct/analysis.hpp>
 #include <boost/test/test_tools.hpp>
 
@@ -63,71 +62,46 @@ namespace daestruct {
      *   0  1  2  3  4  5  6  7  8  9
      *   u0,u1,u2,uC,uL,i0,i1,i2,iC,iL
      */
-    void setCircuitIncidence(const unsigned int eq, const incidence_setter& setter) {
-      switch(eq) {
-      case 0 : { //u0=220*sin(time*omega);
-	setter(eq, 0, 0);
-	return;
-      }
-      case 1 : { //u1=R[1]*i1;
-	setter(eq, 1, 0);
-	setter(eq, 6, 0);
-	return;
-      }
-      case 2 : { //u2=R[2]*i2;
-	setter(eq, 2, 0);
-	setter(eq, 7, 0);
-	return;
-      }
-      case 3 : { //uL=L*der(iL);
-	setter(eq, 4, 0);
-	setter(eq, 9, 1);
-	return;
-      }
-      case 4 : { //iC=C*der(uC);
-	setter(eq, 3, 1);
-	setter(eq, 8, 0);
-	return;
-      }
-      case 5 : { //u0=u1+uL;
-	setter(eq, 0, 0);
-	setter(eq, 1, 0);
-	setter(eq, 4, 0);
-	return;
-      } 
-      case 6 : { //uC=u1+u2;
-	setter(eq, 3, 0);
-	setter(eq, 1, 0);
-	setter(eq, 2, 0);
-	return;
-      }
-      case 7 : { //uL=u2;
-	setter(eq, 4, 0);
-	setter(eq, 2, 0);
-	return;
-      } 
-      case 8 : { //i0=i1+iC;
-	setter(eq, 5, 0);
-	setter(eq, 6, 0);
-	setter(eq, 8, 0);
-	return;
-      }
-      case 9 : { //i1=i2+iL;
-	setter(eq, 6, 0);
-	setter(eq, 7, 0);
-	setter(eq, 9, 0);
-	return;
-      }
-      default:
-	return;
-      }
+    void setCircuitIncidence(InputProblem& p) {
+      //u0=220*sin(time*omega);
+      p.sigma.insert(0, 0, 0);
+      //u1=R[1]*i1;
+      p.sigma.insert(1, 1, 0);
+      p.sigma.insert(1, 6, 0);
+      //u2=R[2]*i2;
+      p.sigma.insert(2, 2, 0);
+      p.sigma.insert(2, 7, 0);
+      //uL=L*der(iL);
+      p.sigma.insert(3, 4, 0);
+      p.sigma.insert(3, 9, -1);
+      //iC=C*der(uC);
+      p.sigma.insert(4, 3, -1);
+      p.sigma.insert(4, 8, 0);
+      //u0=u1+uL;
+      p.sigma.insert(5, 0, 0);
+      p.sigma.insert(5, 1, 0);
+      p.sigma.insert(5, 4, 0);
+      //uC=u1+u2;
+      p.sigma.insert(6, 3, 0);
+      p.sigma.insert(6, 1, 0);
+      p.sigma.insert(6, 2, 0);
+      //uL=u2;
+      p.sigma.insert(7, 4, 0);
+      p.sigma.insert(7, 2, 0);
+      //i0=i1+iC;
+      p.sigma.insert(8, 5, 0);
+      p.sigma.insert(8, 6, 0);
+      p.sigma.insert(8, 8, 0);
+
+      //i1=i2+iL;
+      p.sigma.insert(9, 6, 0);
+      p.sigma.insert(9, 7, 0);
+      p.sigma.insert(9, 9, 0);	
     }
 
     void analyzeCircuit1() {
-
-      InputProblem circuit;
-      circuit.dimension = 10;
-      circuit.mkSigma = &setCircuitIncidence;
+      InputProblem circuit(10);
+      setCircuitIncidence(circuit);
 
       const AnalysisResult res = circuit.pryceAlgorithm();      
 

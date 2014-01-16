@@ -9,7 +9,8 @@ set(hdrs ${hdrs_dir}/daestruct.hpp)
 #Project source files
 set(srcs ${srcs_dir}/analysis.cpp 
          ${srcs_dir}/lap.cpp
-  )
+         ${srcs_dir}/daestruct.cpp  
+)
 
 #Project tests
 set(test_sources ${tests_dir}/boostTests.cpp 

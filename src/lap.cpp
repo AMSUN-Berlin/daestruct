@@ -49,7 +49,7 @@ std::ostream& operator<<(std::ostream& o, const solution& s) {
   return o;
 }
 
-solution lap(const sigma_matrix& assigncost) {
+solution lap(const daestruct::sigma_matrix& assigncost) {
   const long dim = assigncost.dimension;
 
   std::vector<int> u(dim),v(dim),rowsol(dim),colsol(dim);

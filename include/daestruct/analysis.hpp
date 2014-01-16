@@ -23,26 +23,26 @@
 #include <functional>
 #include <boost/variant.hpp>
 
+#include <daestruct/sigma_matrix.hpp>
+
 namespace daestruct {
   namespace analysis {
 
     using namespace std;
 
-    typedef function<void(int,int,int)> incidence_setter;
-
-    typedef function<void(int, incidence_setter)> incidence_callback;
-
     struct AnalysisResult {
-      vector<int> c;
-      vector<int> d;
+      std::vector<int> c;
+      std::vector<int> d;
     };
 
     struct InputProblem {
-      unsigned int dimension;
-      incidence_callback mkSigma;    
+      long dimension;
+      sigma_matrix sigma;
   
+      InputProblem(long d) : dimension(d), sigma(d) {}
+
       AnalysisResult pryceAlgorithm() const;
-    };    
+    };
   }
 }
 

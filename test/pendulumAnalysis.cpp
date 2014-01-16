@@ -55,32 +55,20 @@ namespace daestruct {
      * Set the incidence according to the cartesian pendulum model above
      * variables: x,y,F
      */
-    void setIncidence(const unsigned int eq, const incidence_setter& setter) {
-      switch(eq) {
-	case 0 : {
-	  setter(eq, 0, 0);
-	  setter(eq, 1, 0);
-	  return;
-	}
-	case 1 : {
-	  setter(eq, 0, 2);
-	  setter(eq, 2, 0);
-	  return;
-	}
-	case 2 : {
-	  setter(eq, 1, 2);
-	  setter(eq, 2, 0);
-	  return;
-	}
-	default:
-	  return;
-	}
+    void setIncidence(InputProblem& p) {
+      p.sigma.insert(0, 0, 0);
+      p.sigma.insert(0, 1, 0);
+
+      p.sigma.insert(1, 0, -2);
+      p.sigma.insert(1, 2, 0);
+
+      p.sigma.insert(2, 1, -2);
+      p.sigma.insert(2, 2, 0);
     }
 
     void analyzePendulum() {
-      InputProblem pendulum;
-      pendulum.dimension = 3;
-      pendulum.mkSigma = &setIncidence;
+      InputProblem pendulum(3);
+      setIncidence(pendulum);
 
       const AnalysisResult res = pendulum.pryceAlgorithm();      
 
@@ -96,49 +84,29 @@ namespace daestruct {
      * Set the incidence according to the cartesian pendulum as described by Modelica
      * variables: x,y,vx,vy,F
      */
-    void setIncidenceModelica(const unsigned int eq, const incidence_setter& setter) {
-      switch(eq) {
-	//x² + y² ...
-	case 0 : {
-	  setter(eq, 0, 0);
-	  setter(eq, 1, 0);
-	  return;
-	}
-	  //der(x) = vx 
-	case 1 : {
-	  setter(eq, 0, 1);
-	  setter(eq, 2, 0);
-	  return;
-	}
-	  //der(y) = vy 
-	case 2 : {
-	  setter(eq, 1, 1);
-	  setter(eq, 3, 0);
-	  return;
-	}
-	  //Fx = der(vx);
-	case 3 : {
-	  setter(eq, 0, 0);
-	  setter(eq, 2, 1);
-	  setter(eq, 4, 0);
-	  return;
-	}
-	  //Fy = der(vy) - g;
-	case 4 : {
-	  setter(eq, 1, 0);
-	  setter(eq, 3, 1);
-	  setter(eq, 4, 0);
-	  return;
-	}
-	default:
-	  return;
-	}
+    void setIncidenceModelica(InputProblem& p) {
+      //x² + y² ...
+      p.sigma.insert(0, 0, 0);
+      p.sigma.insert(0, 1, 0);
+      //der(x) = vx 
+      p.sigma.insert(1, 0, -1);
+      p.sigma.insert(1, 2, 0);
+      //der(y) = vy 
+      p.sigma.insert(2, 1, -1);
+      p.sigma.insert(2, 3, 0);
+      //Fx = der(vx);
+      p.sigma.insert(3, 0, 0);
+      p.sigma.insert(3, 2, -1);
+      p.sigma.insert(3, 4, 0);
+      //Fy = der(vy) - g;
+      p.sigma.insert(4, 1, 0);
+      p.sigma.insert(4, 3, -1);
+      p.sigma.insert(4, 4, 0);
     }
 
     void analyzeModelicaPendulum() {
-      InputProblem pendulum;
-      pendulum.dimension = 5;
-      pendulum.mkSigma = &setIncidenceModelica;
+      InputProblem pendulum(5);
+      setIncidenceModelica(pendulum);
 
       const AnalysisResult res = pendulum.pryceAlgorithm();      
 

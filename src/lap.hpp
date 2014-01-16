@@ -24,7 +24,7 @@
 #include <vector>
 #include <climits>
 
-#include "sigma_matrix.hpp"
+#include <daestruct/sigma_matrix.hpp>
 
 struct solution {
   int cost;
@@ -37,7 +37,7 @@ struct solution {
 /**
  * Solve the integer linear assignment problem defined by the cost matrix
  */
-solution lap(const sigma_matrix& cost);
+solution lap(const daestruct::sigma_matrix& cost);
 
 std::ostream& operator<<(std::ostream& o, const solution& s);
 
