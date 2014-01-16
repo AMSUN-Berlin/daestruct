@@ -41,6 +41,10 @@ find_package(Boost COMPONENTS system filesystem timer unit_test_framework REQUIR
 
 add_executable(${PROJECT_NAME}_test ${test_sources})
 
+add_executable(pendulumExample ${pendulum_example_sources})
+
+target_link_libraries(pendulumExample ${PROJECT_NAME})
+
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
   ${Boost_FILESYSTEM_LIBRARY}

@@ -4,8 +4,9 @@ set(source_dir src)
 #Path to tests
 set(test_dir test)
 
+set ( CMAKE_CXX_FLAGS "-std=c++11" )
+
 add_definitions(
-  -std=c++11
   -march=native
   -Wall
   #-O3

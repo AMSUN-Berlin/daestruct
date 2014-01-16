@@ -28,11 +28,11 @@ extern "C" {
 
   struct daestruct_input : public InputProblem {};
 
-  void daestruct_input_set(daestruct_input* problem, int variable, int equation, int derivative) {
-    problem->sigma.insert(variable, equation, -derivative);
+  void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative) {
+    problem->sigma.insert(equation, variable, -derivative);
   }
  
-  daestruct_input* daestruct_input_create(int dimension) {
+  struct daestruct_input* daestruct_input_create(int dimension) {
     return static_cast<daestruct_input*>(new InputProblem(dimension));
   }
 
@@ -46,11 +46,11 @@ extern "C" {
     return static_cast<daestruct_result*>(new AnalysisResult(problem->pryceAlgorithm()));
   }
 
-  int daestruct_result_equation_index(daestruct_result* result, int equation) {
+  int daestruct_result_equation_index(struct daestruct_result* result, int equation) {
     return result->d[equation];
   }
 
-  int daestruct_result_variable_index(daestruct_result* result, int variable) {
+  int daestruct_result_variable_index(struct daestruct_result* result, int variable) {
     return result->c[variable];
   }
 

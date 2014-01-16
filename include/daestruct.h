@@ -29,13 +29,13 @@ extern "C" {
   /**
    * set the maximum derivative of @variable in @equation in the given input problem
    */
-  void daestruct_input_set(daestruct_input* problem, int variable, int equation, int derivative);
+  void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative);
  
   /**
    * create an input problem description for the structural analysis
    * the returned pointer must be deleted with daestruct_input_delete
    */
-  daestruct_input* daestruct_input_create(int dimension);
+  struct daestruct_input* daestruct_input_create(int dimension);
 
   /**
    * delete a daestruct input problem
@@ -54,12 +54,12 @@ extern "C" {
   /**
    * get the derivation index
    */
-  int daestruct_result_equation_index(daestruct_result* result, int equation);
+  int daestruct_result_equation_index(struct daestruct_result* result, int equation);
 
   /**
    * get the derivation index
    */
-  int daestruct_result_variable_index(daestruct_result* result, int variable);
+  int daestruct_result_variable_index(struct daestruct_result* result, int variable);
 
   /**
    * delete the given result description
