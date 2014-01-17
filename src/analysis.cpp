@@ -49,7 +49,7 @@ namespace daestruct {
 	  c[j] = max;
 	}
 
-	for (unsigned long int i = 0; i < sigma.dimension; i++) {
+	for (unsigned int i = 0; i < sigma.dimension; i++) {
 	  const int j = assignment[i];
 	  const int c2 = c[j] + sigma(i, j);
 	  
@@ -62,12 +62,12 @@ namespace daestruct {
     }
 
     AnalysisResult InputProblem::pryceAlgorithm() const {
-      std::cout << sigma << std::endl;
+      //std::cout << sigma << std::endl;
 
       /* solve linear assignment problem */
       solution assignment = lap(sigma);
 
-      std::cout << assignment << std::endl;
+      std::cout << "lap solved" << std::endl;
 
       AnalysisResult result;
       result.c.resize(dimension);
@@ -75,7 +75,7 @@ namespace daestruct {
 
       /* run fix-point algorithm */
       solveByFixedPoint(assignment.rowsol, sigma, result.c, result.d);
-      std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
+      //std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
 
       return result;
     }

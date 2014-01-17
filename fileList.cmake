@@ -21,3 +21,6 @@ set(test_sources ${tests_dir}/boostTests.cpp
 
 #examples
 set(pendulum_example_sources ${examples_dir}/pendulum.c)
+set(largeCircuit_example_sources ${examples_dir}/largeCircuit.c)
+
+
