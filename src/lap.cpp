@@ -73,15 +73,8 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   for (j = dim-1; j >= 0; j--)    // reverse order gives better results.
   {
     // find minimum cost over rows.
-    min = assigncost(0,j); 
-    imin = 0;
-    for (i = 1; i < dim; i++)  
-      if (assigncost(i,j) < min) 
-      { 
-        min = assigncost(i,j); 
-        imin = i;
-      }
-    v[j] = min; 
+    imin = assigncost.smallest_cost_row(j);
+    v[j] = assigncost(imin,j); 
 
     if (++matches[imin] == 1) 
     { 
@@ -94,7 +87,9 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   }
 
   // REDUCTION TRANSFER
-  for (i = 0; i < dim; i++) 
+  for (auto row_it = assigncost.rowBegin(); row_it != assigncost.rowEnd(); row_it++) { 
+    i = row_it.index1();
+
     if (matches[i] == 0)     // fill list of unassigned 'free' rows.
       free[numfree++] = i;
     else
@@ -102,12 +97,15 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
       {
         j1 = rowsol[i]; 
         min = BIG;
-        for (j = 0; j < dim; j++)  
+        for (auto col_it = row_it.begin(); col_it != row_it.end(); col_it++) {  
+	  j = col_it.index2();
           if (j != j1)
-	    if (assigncost(i,j) - v[j] < min)
-	      min = assigncost(i,j) - v[j];
+	    if (*col_it - v[j] < min)
+	      min = *col_it - v[j];
+	}
         v[j1] = v[j1] - min;
       }
+  }
 
   // AUGMENTING ROW REDUCTION 
   int loopcnt = 0;           // do-loop to be done twice.
@@ -123,15 +121,18 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
     while (k < prvnumfree)
     {
       i = free[k]; 
+      auto row_it = assigncost.findRow(i);
       k++;
 
       // find minimum and second minimum reduced cost over columns.
-      umin = assigncost(i,0) - v[0]; 
-      j1 = 0; 
+      auto col_it = row_it.begin();
+      j1 = col_it.index2();
+      umin =  *col_it - v[j1]; 
       usubmin = BIG;
-      for (j = 1; j < dim; j++) 
+      for (col_it++; col_it != row_it.end(); col_it++) 
       {
-        h = assigncost(i,j) - v[j];
+	j = col_it.index2();
+        h = *col_it - v[j];
         if (h < usubmin) {
           if (h >= umin) 
           { 
@@ -315,3 +316,8 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
 
   return sol;
 }
+
+
+
+
+

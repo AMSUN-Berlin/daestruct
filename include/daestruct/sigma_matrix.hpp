@@ -34,11 +34,12 @@ namespace daestruct {
   class sigma_matrix {
 
     compressed_matrix<int> m;
-  
+    std::vector<int> minimum_row;
+
   public:
     long dimension;
 
-    sigma_matrix(long d) : m(d, d, 3*d), dimension(d) {}
+    sigma_matrix(long d) : m(d, d, 3*d), minimum_row(d), dimension(d) {}
 
     compressed_matrix<int>::const_iterator1 rowBegin() const {
       return m.begin1();
@@ -47,6 +48,14 @@ namespace daestruct {
     compressed_matrix<int>::const_iterator1 rowEnd() const {
       return m.end1();
     }
+
+    compressed_matrix<int>::const_iterator1 findRow(int i) const {
+      return m.find1(0, i, 0);
+    }
+
+    int smallest_cost_row(int column) const {
+      return minimum_row[column];
+    }    
 
     const int operator()(const int i, const int j) const {
       const int* ptr = m.find_element(i,j);
@@ -57,7 +66,12 @@ namespace daestruct {
     }
 
     void insert(int i, int j, int x) {
-      m.insert_element(i, j, x);
+      const int* ptr = m.find_element(minimum_row[j],j);
+      
+      if (!ptr || *ptr > x)
+	minimum_row[j] = i;
+
+      m.insert_element(i,j,x);
     }
   
     template<class E, class T> inline static void nicePrint(std::basic_ostringstream<E, T>& s, int val) {
