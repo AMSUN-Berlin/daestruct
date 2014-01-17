@@ -35,18 +35,15 @@ namespace daestruct {
 
       while (!converged) {
 	converged = true;
-	for (unsigned long int j = 0; j < sigma.dimension; j++) {
-	  int max = 0;
-	  
-	  //TODO: iterate only over set fields in sigma!
-	  for (unsigned long int i = 0; i < sigma.dimension; i++) {
-	    if (sigma(i,j) != BIG) {
-	      const int a = -sigma(i, j) + d[i];
-	      max = max >= a ? max : a;
-	    }
-	  }
+	
+	for (auto row_iter = sigma.rowBegin(); row_iter != sigma.rowEnd(); row_iter++) {	      
+	  const int i = row_iter.index1();
 
-	  c[j] = max;
+	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
+	    const int j = col_iter.index2();
+	    const int a = -1 * *col_iter + d[i];
+	    if (a > c[j]) c[j] = a;
+	  }
 	}
 
 	for (unsigned int i = 0; i < sigma.dimension; i++) {

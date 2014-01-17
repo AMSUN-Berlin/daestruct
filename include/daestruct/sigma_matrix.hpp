@@ -40,6 +40,14 @@ namespace daestruct {
 
     sigma_matrix(long d) : m(d, d, 3*d), dimension(d) {}
 
+    compressed_matrix<int>::const_iterator1 rowBegin() const {
+      return m.begin1();
+    }
+
+    compressed_matrix<int>::const_iterator1 rowEnd() const {
+      return m.end1();
+    }
+
     const int operator()(const int i, const int j) const {
       const int* ptr = m.find_element(i,j);
       if (ptr)
