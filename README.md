@@ -5,7 +5,7 @@ Structural analysis of Differential Algebraic Equations (DAEs)
 
 This library provides an implementation of Pryce' index reduction method[1].
 In fact this method does not completely implement index reduction but yields
-the information about which equations and variables need to be derived up to
+the information about which equations and variables need to be differentiated up to
 which order to maintain an ODE.
 
 Example
