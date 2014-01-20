@@ -9,7 +9,6 @@ set ( CMAKE_CXX_FLAGS "-std=c++11" )
 add_definitions(
   -march=native
   -Wall
-  -O3
   -g
 )
 

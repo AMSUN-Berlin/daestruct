@@ -16,40 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DAE_ANALYSIS_HPP
-#define DAE_ANALYSIS_HPP
 
-#include <vector>
-#include <functional>
-#include <boost/variant.hpp>
-
-#include <daestruct/sigma_matrix.hpp>
+#ifndef DAESTRUCT_TEST_LAP_HPP
+#define DAESTRUCT_TEST_LAP_HPP
 
 namespace daestruct {
-  namespace analysis {
+  namespace test {
+    
+    void test_LAP_on_identity();
 
-    using namespace std;
-
-    void solveByFixedPoint(const std::vector<int>& assignment,  
-			   const sigma_matrix& sigma,
-			   std::vector<int>& c, std::vector<int>& d);
-
-    struct AnalysisResult {
-      std::vector<int> row_assignment;
-      std::vector<int> col_assignment;
-      
-      std::vector<int> c;
-      std::vector<int> d;
-    };
-
-    struct InputProblem {
-      long dimension;
-      sigma_matrix sigma;
-  
-      InputProblem(long d) : dimension(d), sigma(d) {}
-
-      AnalysisResult pryceAlgorithm() const;
-    };
   }
 }
 

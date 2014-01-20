@@ -22,6 +22,7 @@
 
 #include "pendulumAnalysis.hpp"
 #include "circuitAnalysis.hpp"
+#include "test_lap.hpp"
 
 using namespace boost::unit_test;
 
@@ -37,6 +38,9 @@ init_unit_test_suite( int argc, char* argv[] ) {
 
   framework::master_test_suite().
         add( BOOST_TEST_CASE( &analyzeCircuit1 ) );
+
+  framework::master_test_suite().
+        add( BOOST_TEST_CASE( &test_LAP_on_identity ) );
 
   return 0;
 }

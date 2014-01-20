@@ -65,13 +65,14 @@ namespace daestruct {
       solution assignment = lap(sigma);
 
       std::cout << "lap solved" << std::endl;
-
       AnalysisResult result;
+      result.row_assignment = std::move(assignment.rowsol);
+      result.col_assignment = std::move(assignment.colsol);
       result.c.resize(dimension);
       result.d.resize(dimension);
 
       /* run fix-point algorithm */
-      solveByFixedPoint(assignment.rowsol, sigma, result.c, result.d);
+      solveByFixedPoint(result.row_assignment, sigma, result.c, result.d);
       //std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
 
       return result;

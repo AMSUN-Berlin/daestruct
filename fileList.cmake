@@ -11,12 +11,14 @@ set(hdrs ${hdrs_dir}/daestruct.hpp)
 set(srcs ${srcs_dir}/analysis.cpp 
          ${srcs_dir}/lap.cpp
          ${srcs_dir}/daestruct.cpp
+         ${srcs_dir}/variable_analysis.cpp
 )
 
 #Project tests
 set(test_sources ${tests_dir}/boostTests.cpp 
   ${tests_dir}/pendulumAnalysis.cpp 
   ${tests_dir}/circuitAnalysis.cpp 
+  ${tests_dir}/test_lap.cpp 
   )
 
 #examples

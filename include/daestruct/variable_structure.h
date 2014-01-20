@@ -16,41 +16,31 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef DAE_ANALYSIS_HPP
-#define DAE_ANALYSIS_HPP
+#ifndef DAESTRUCT_VARIABLE_STRUCTURE_H
+#define DAESTRUCT_VARIABLE_STRUCTURE_H
 
-#include <vector>
-#include <functional>
-#include <boost/variant.hpp>
-
-#include <daestruct/sigma_matrix.hpp>
-
-namespace daestruct {
-  namespace analysis {
-
-    using namespace std;
-
-    void solveByFixedPoint(const std::vector<int>& assignment,  
-			   const sigma_matrix& sigma,
-			   std::vector<int>& c, std::vector<int>& d);
-
-    struct AnalysisResult {
-      std::vector<int> row_assignment;
-      std::vector<int> col_assignment;
-      
-      std::vector<int> c;
-      std::vector<int> d;
-    };
-
-    struct InputProblem {
-      long dimension;
-      sigma_matrix sigma;
+#ifdef __cplusplus
+extern "C" {
+#endif
   
-      InputProblem(long d) : dimension(d), sigma(d) {}
+  /**
+   * A change of one unknown
+   */
+  struct daestruct_unkn_diff;
 
-      AnalysisResult pryceAlgorithm() const;
-    };
-  }
+  struct daestruct_unkn_diff* daestruct_remove_unknown(int idx);
+
+  struct daestruct_unkn_diff* daestruct_insert_unknown_before(int idx);
+
+  /**
+   * A change of one equation
+   */
+  struct daestruct_eqn_diff;
+
+
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif

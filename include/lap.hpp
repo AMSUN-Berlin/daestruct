@@ -39,6 +39,11 @@ struct solution {
  */
 solution lap(const daestruct::sigma_matrix& cost);
 
+/**
+ * Solve the integer linear assignment problem using an older (partiall) assignment
+ */
+solution lap(const daestruct::sigma_matrix& cost, const std::vector<int>& row_assignment);
+
 std::ostream& operator<<(std::ostream& o, const solution& s);
 
 #endif
