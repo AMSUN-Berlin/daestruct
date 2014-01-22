@@ -19,10 +19,14 @@
 
 #include <daestruct/variable_analysis.hpp>
 
+#include <boost/icl/interval.hpp>
+#include <boost/icl/interval_map.hpp>
 #include "lap.hpp"
 
 namespace daestruct {
   namespace analysis {
+
+using namespace boost::icl;
 
     AnalysisResult ChangedProblem::pryceAlgorithm() const {
       /* solve linear assignment problem */
@@ -41,62 +45,65 @@ namespace daestruct {
     }
 
     ChangedProblem::ChangedProblem(const InputProblem& prob, const AnalysisResult& result,
-				   const int dimDelta, const StructChange& delta) : 
-      dimension(prob.dimension + dimDelta), sigma(prob.dimension) {
-	
+				   const StructChange& delta) : 
+      rest_dimension(prob.dimension - delta.deletedRows.size()),
+      dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
+     
+      applyDiff(prob.sigma, result, delta);
+    }
+
+    ChangedProblem::ChangedProblem(const ChangedProblem& prob, const AnalysisResult& result,
+				   const StructChange& delta) : 
+      rest_dimension(prob.dimension - delta.deletedRows.size()),
+      dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
+     
+      applyDiff(prob.sigma, result, delta);
+    }
+
+    void ChangedProblem::applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta) {
       pResult.row_assignment.reserve(dimension);
       pResult.col_assignment.reserve(dimension);
+
+      for (int removed : delta.deletedCols)
+	colOffsets += make_pair(interval<int>::closed(removed, dimension), -1);
+
+      for (int removed : delta.deletedRows)
+	rowOffsets += make_pair(interval<int>::closed(removed, dimension), -1);
+
+      for (auto row_iter = oldSigma.rowBegin(); row_iter != oldSigma.rowEnd(); row_iter++) {
+	const int orig_row = row_iter.index1();
+	const int row = orig_row + rowOffsets(orig_row);
 	
-      auto rowDelta = delta.rowDiffs.begin();
-      int rowOffset = 0;
-      for (auto row_iter = prob.sigma.rowBegin(); row_iter != prob.sigma.rowEnd();) {
-	if (rowDelta != delta.rowDiffs.end() && row_iter.index1() == rowDelta->location) {
-	  switch (rowDelta->action) {
-	  case REMOVE:
-	    rowOffset -= 1;
-	    row_iter++;
-	    break;
-	  case INSERT:
-	    /* insert a new row */
-	    pResult.row_assignment[row_iter.index1()+rowOffset] = -1; // new row is unassigned
+	const int orig_assign_col = result.row_assignment[orig_row];
+	const int new_assign_col = orig_assign_col + colOffsets(orig_assign_col);
+	pResult.row_assignment[row] = new_assign_col;
+	pResult.col_assignment[new_assign_col] = row;
 
-	    /* get sigma values for new row */
-	    for (auto v_i = rowDelta->sigma.begin(); v_i != rowDelta->sigma.end(); v_i++)
-	      sigma.insert(row_iter.index1()+rowOffset, v_i.index(), *v_i);
-
-	    rowOffset += 1;
-	    break;
-	  }
-	  rowDelta++;
-	} else {
+	if (delta.deletedRows.count(row_iter.index1()) == 0) {
 	  /* insert row from original matrix */
-	  auto colDelta = delta.colDiffs.begin();
-	  int colOffset = 0;
-	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end();)
-	    if (colDelta != delta.colDiffs.end() && col_iter.index2() == colDelta->location) {
-	      /* apply column diff */
-	      switch (colDelta->action) {
-	      case REMOVE:
-		colOffset -= 1;
-		col_iter++; //advance one column, this one has been removed
-		break;		
-	      case INSERT:
-		pResult.col_assignment[colDelta->location+colOffset] = -1; // new col is unassigned
-		colOffset += 1;
-		break;
-	      }
-	      colDelta++;
-	    }	else {
-	      const int row = row_iter.index1() + rowOffset;
-	      const int column = col_iter.index2() + colOffset;
+	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
+	    if (delta.deletedCols.count(col_iter.index2()) == 0) {
+	      const int orig_col = col_iter.index2();
+	      const int column = orig_col + colOffsets(orig_col);
 	      /* insert column value from original matrix */
 	      sigma.insert(row, column, *col_iter);
-	      pResult.col_assignment[column] = row;
-	      pResult.row_assignment[row] = column;
-	    }	    
-	  row_iter++;
+	    }
 	}
-      }	
+      }
+      
+      for (int i = 0; i < delta.newRows.size(); i++) {
+	const NewRow& nrow = delta.newRows[i];
+	for (auto it = nrow.ex_vars.begin(); it != nrow.ex_vars.end(); it++)
+	  sigma.insert(rest_dimension+i, it.index(), *it); 
+
+	for (auto it = nrow.new_vars.begin(); it != nrow.new_vars.end(); it++)
+	  sigma.insert(rest_dimension+i, it.index() + rest_dimension, *it); 
+
+	pResult.col_assignment[rest_dimension+i] = -1;
+	pResult.row_assignment[rest_dimension+i] = -1;
+      }
     }
   }
 }

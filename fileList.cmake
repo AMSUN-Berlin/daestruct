@@ -12,6 +12,7 @@ set(srcs ${srcs_dir}/analysis.cpp
          ${srcs_dir}/lap.cpp
          ${srcs_dir}/daestruct.cpp
          ${srcs_dir}/variable_analysis.cpp
+         ${srcs_dir}/variable_structure.cpp
 )
 
 #Project tests
@@ -24,5 +25,6 @@ set(test_sources ${tests_dir}/boostTests.cpp
 #examples
 set(pendulum_example_sources ${examples_dir}/pendulum.c)
 set(largeCircuit_example_sources ${examples_dir}/largeCircuit.c)
+set(switchableCircuit_example_sources ${examples_dir}/largeSwitchCircuit.c)
 
 

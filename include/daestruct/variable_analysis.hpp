@@ -20,47 +20,44 @@
 #define DAE_VARIABLE_ANALYSIS_HPP
 
 #include <vector>
+#include <set>
 
+#include <boost/icl/interval.hpp>
+#include <boost/icl/interval_map.hpp>
 #include <daestruct/sigma_matrix.hpp>
 #include <daestruct/analysis.hpp>
 
 namespace daestruct {
   namespace analysis {
 
-    using namespace std;
-
-    enum action { REMOVE, INSERT };
-
-    /**
-     * remove some rows or columns 
-     */
-    struct ColDiff {
-      action action;
-      int location;
-      int count;
-    };
-
-    /**
-     * insert a row or column 
-     */
-    struct RowDiff {
-      action action;
-      int location;
-      compressed_vector<int> sigma;
+    struct NewRow {
+      compressed_vector<int> ex_vars;
+      compressed_vector<int> new_vars;      
     };
 
     struct StructChange {
-      std::vector<RowDiff> rowDiffs;          
-      std::vector<ColDiff> colDiffs;          
+      int newVars;
+      std::set<int> deletedRows;
+      std::set<int> deletedCols;      
+      std::vector<NewRow> newRows;
     };
 
     struct ChangedProblem {
+    private:
+      void applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta);
+    public:
+      long rest_dimension;
       long dimension;
       sigma_matrix sigma;
       AnalysisResult pResult;
+      boost::icl::interval_map<int, int> colOffsets;
+      boost::icl::interval_map<int, int> rowOffsets;
 
       ChangedProblem(const InputProblem& prob, const AnalysisResult& result,
-		     const int dimDelta, const StructChange& delta);
+		     const StructChange& delta);
+
+      ChangedProblem(const ChangedProblem& prob, const AnalysisResult& result,
+		     const StructChange& delta);
 
       AnalysisResult pryceAlgorithm() const;
     };

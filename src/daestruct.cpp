@@ -21,12 +21,11 @@
 
 #include <daestruct/analysis.hpp>
 #include <daestruct/sigma_matrix.hpp>
+#include <daestruct/c_cpp_interface.hpp>
 
 extern "C" {
 
   using namespace daestruct::analysis;
-
-  struct daestruct_input : public InputProblem {};
 
   void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative) {
     problem->sigma.insert(equation, variable, -derivative);
@@ -39,8 +38,6 @@ extern "C" {
   void daestruct_input_delete(struct daestruct_input* problem) {
     delete problem;
   }
-
-  struct daestruct_result : public AnalysisResult {};
 
   struct daestruct_result* daestruct_analyse(struct daestruct_input* problem) {
     return static_cast<daestruct_result*>(new AnalysisResult(problem->pryceAlgorithm()));

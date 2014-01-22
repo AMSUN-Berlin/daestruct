@@ -19,25 +19,57 @@
 #ifndef DAESTRUCT_VARIABLE_STRUCTURE_H
 #define DAESTRUCT_VARIABLE_STRUCTURE_H
 
+#include <daestruct.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
   
   /**
-   * A change of one unknown
+   * A change in a structural description of a DAE
    */
-  struct daestruct_unkn_diff;
+  struct daestruct_diff;
 
-  struct daestruct_unkn_diff* daestruct_remove_unknown(int idx);
+  struct daestruct_diff* daestruct_diff_new();
 
-  struct daestruct_unkn_diff* daestruct_insert_unknown_before(int idx);
+  void daestruct_diff_delete(struct daestruct_diff* diff);
+
+  void daestruct_diff_remove_unknown(struct daestruct_diff* diff, int unknown);
+
+  void daestruct_diff_remove_equation(struct daestruct_diff* diff, int equation);
+
+  int daestruct_diff_add_unknown(struct daestruct_diff* diff);
+
+  int daestruct_diff_add_equation(struct daestruct_diff* diff);
+
+  void daestruct_diff_set_existing(struct daestruct_diff* diff, int newEquation, int unknown, int der);
+
+  void daestruct_diff_set_new(struct daestruct_diff* diff, int newEquation, int unknown, int der);
 
   /**
-   * A change of one equation
+   * A problem that has been derived from an older problem
    */
-  struct daestruct_eqn_diff;
+  struct daestruct_changed;
 
+  struct daestruct_changed* daestruct_change_orig(struct daestruct_input*  original, 
+						  struct daestruct_result* result, 
+						  struct daestruct_diff* diff);
 
+  struct daestruct_changed* daestruct_change(struct daestruct_changed* original, 
+					     struct daestruct_result* result, 
+					     struct daestruct_diff* diff);
+
+  int daestruct_changed_new_un_index(struct daestruct_changed* changed, int new_unknown);
+
+  int daestruct_changed_new_eq_index(struct daestruct_changed* changed, int new_equation);
+
+  int daestruct_changed_ex_un_index(struct daestruct_changed* changed, int new_unknown);
+
+  int daestruct_changed_ex_eq_index(struct daestruct_changed* changed, int new_equation);
+
+  void daestruct_changed_delete(struct daestruct_changed* changed);
+
+  struct daestruct_result* daestruct_changed_analyse(struct daestruct_changed* problem);
 
 #ifdef __cplusplus
 }
