@@ -30,7 +30,7 @@ using namespace boost::icl;
 
     AnalysisResult ChangedProblem::pryceAlgorithm() const {
       /* solve linear assignment problem */
-      solution assignment = lap(sigma);
+      solution assignment = delta_lap(sigma, row_assignment, col_assignment);
 
       AnalysisResult result;
       result.row_assignment = std::move(assignment.rowsol);
@@ -63,8 +63,8 @@ using namespace boost::icl;
     }
 
     void ChangedProblem::applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta) {
-      pResult.row_assignment.reserve(dimension);
-      pResult.col_assignment.reserve(dimension);
+      row_assignment.resize(dimension);
+      col_assignment.resize(dimension);
 
       for (int removed : delta.deletedCols)
 	colOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension), -1);
@@ -76,12 +76,16 @@ using namespace boost::icl;
 	const int orig_row = row_iter.index1();
 	const int row = orig_row + rowOffsets(orig_row);
 	
-	const int orig_assign_col = result.row_assignment[orig_row];
-	const int new_assign_col = orig_assign_col + colOffsets(orig_assign_col);
-	pResult.row_assignment[row] = new_assign_col;
-	pResult.col_assignment[new_assign_col] = row;
-
 	if (delta.deletedRows.count(row_iter.index1()) == 0) {
+	  const int orig_assign_col = result.row_assignment[orig_row];
+
+	  if (delta.deletedCols.count(orig_assign_col) == 0) {
+	    const int new_assign_col = orig_assign_col + colOffsets(orig_assign_col);
+	    row_assignment[row] = new_assign_col;
+	    col_assignment[new_assign_col] = row;
+	  } else 
+	    row_assignment[row] = -1;
+
 	  /* insert row from original matrix */
 	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
 	    if (delta.deletedCols.count(col_iter.index2()) == 0) {
@@ -101,8 +105,8 @@ using namespace boost::icl;
 	for (const std::pair<int, int>& p : nrow.new_vars)
 	  sigma.insert(rest_dimension+i, get<0>(p) + rest_dimension, get<1>(p)); 
 
-	pResult.col_assignment[rest_dimension+i] = -1;
-	pResult.row_assignment[rest_dimension+i] = -1;
+	col_assignment[rest_dimension+i] = -1;
+	row_assignment[rest_dimension+i] = -1;
       }
     }
   }

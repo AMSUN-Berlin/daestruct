@@ -40,16 +40,19 @@ namespace daestruct {
       BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,1,2,3,4}) );
       BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,1,2,3,4}) );
       
-      std::vector<int> partial(assignment.rowsol);
+      std::vector<int> partial_r(assignment.rowsol);
+      std::vector<int> partial_c(assignment.colsol);
 
-      partial[2] = -1;
-      solution assignment2 = lap(sigma, partial);
+      partial_r[2] = -1;
+      partial_c[2] = -1;
+      solution assignment2 = delta_lap(sigma, partial_r, partial_c);
 
       BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<int>({0,1,2,3,4}) );
       BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<int>({0,1,2,3,4}) );
 
-      partial[1] = -1;
-      solution assignment3 = lap(sigma, partial);
+      partial_r[1] = -1;
+      partial_c[1] = -1;
+      solution assignment3 = delta_lap(sigma, partial_r, partial_c);
 
       BOOST_CHECK_EQUAL( assignment3.rowsol, std::vector<int>({0,1,2,3,4}) );
       BOOST_CHECK_EQUAL( assignment3.colsol, std::vector<int>({0,1,2,3,4}) );

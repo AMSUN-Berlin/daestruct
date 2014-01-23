@@ -50,7 +50,8 @@ namespace daestruct {
       long rest_dimension;
       long dimension;
       sigma_matrix sigma;
-      AnalysisResult pResult;
+      std::vector<int> row_assignment;
+      std::vector<int> col_assignment;
       boost::icl::interval_map<int, int> colOffsets;
       boost::icl::interval_map<int, int> rowOffsets;
 

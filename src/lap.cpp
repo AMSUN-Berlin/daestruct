@@ -49,9 +49,9 @@ std::ostream& operator<<(std::ostream& o, const solution& s) {
   return o;
 }
 
-solution lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _rowsol) {
+solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _colsol, const std::vector<int>& _rowsol) {
   const long dim = assigncost.dimension;
-  std::vector<int> u(dim),v(dim),colsol(dim, -1),rowsol(_rowsol);
+  std::vector<int> u(dim),v(dim);
 
   int numfree = 0;
   int* free = new int[dim];       // list of unassigned rows.
@@ -59,18 +59,19 @@ solution lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& 
   int* d = new int[dim];         // 'cost-distance' in augmenting path calculation.
   int* pred = new int[dim];       // row-predecessor of column in augmenting/alternating path.
 
+  std::vector<int> colsol(_colsol), rowsol(_rowsol); //TODO avoid this copying?
 
+  //TODO: this can be optimized with more fine grained delta information
   for (int i = 0; i < dim; i++) {
     const int j = rowsol[i];
     if (j >= 0) {
-      colsol[j] = i;
       v[i] = assigncost(i, j);
     } else {
       free[numfree++] = i;
     }
   }
 
-    // AUGMENT SOLUTION for each free row.
+  // AUGMENT SOLUTION for each free row.
   for (int f = 0; f < numfree; f++) {
     int freerow = free[f];       // start row of augmenting path.
     // Dijkstra shortest path algorithm.
