@@ -67,10 +67,10 @@ using namespace boost::icl;
       pResult.col_assignment.reserve(dimension);
 
       for (int removed : delta.deletedCols)
-	colOffsets += make_pair(interval<int>::closed(removed, dimension), -1);
+	colOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension), -1);
 
       for (int removed : delta.deletedRows)
-	rowOffsets += make_pair(interval<int>::closed(removed, dimension), -1);
+	rowOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension), -1);
 
       for (auto row_iter = oldSigma.rowBegin(); row_iter != oldSigma.rowEnd(); row_iter++) {
 	const int orig_row = row_iter.index1();
