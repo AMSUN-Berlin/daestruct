@@ -241,7 +241,7 @@ struct switch_event switch_sub_circuit(struct circuit* circuit, int n) {
     
     int new = daestruct_diff_add_equation(sw.diff);
     daestruct_diff_set_existing(sw.diff, new, i0, 0);
-    daestruct_diff_set_new(sw.diff, new, i1(s), 0);
+    daestruct_diff_set_existing(sw.diff, new, i1(s), 0);
 
     sw.n = n;
     sw.uC = -1;
@@ -309,16 +309,21 @@ int main(int argc, char** argv) {
 
     for (int k = 0; k < times; k++) {
       daestruct_result_delete(result);
+      printf("Running analysis...\n");
       result = daestruct_changed_analyse(ch);
+      printf("Reconciling...\n");
       reconcile(&circuit, &se, ch);
       daestruct_diff_delete(se.diff);
+
+      printf("Next event...\n");
       se = switch_sub_circuit(&circuit, sw);
-      daestruct_changed_delete(ch);
+
       struct daestruct_changed* old = ch;
       ch = daestruct_change(old, result, se.diff);
       daestruct_changed_delete(old);
     }
-
+    
+    daestruct_changed_delete(ch);
     daestruct_input_delete(sigma);
     daestruct_result_delete(result);
 
