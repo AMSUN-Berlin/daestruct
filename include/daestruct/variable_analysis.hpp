@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <set>
+#include <map>
 
 #include <boost/icl/interval.hpp>
 #include <boost/icl/interval_map.hpp>
@@ -31,8 +32,8 @@ namespace daestruct {
   namespace analysis {
 
     struct NewRow {
-      compressed_vector<int> ex_vars;
-      compressed_vector<int> new_vars;      
+      map<int, int> ex_vars;
+      map<int, int> new_vars;      
     };
 
     struct StructChange {

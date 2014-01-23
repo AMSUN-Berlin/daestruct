@@ -56,11 +56,11 @@ extern "C" {
   }
 
   void daestruct_diff_set_existing(struct daestruct_diff* diff, int newEquation, int unknown, int der) {
-    diff->newRows[newEquation].ex_vars.insert_element(unknown, der);
+    diff->newRows[newEquation].ex_vars[unknown] = der;
   }
 
   void daestruct_diff_set_new(struct daestruct_diff* diff, int newEquation, int unknown, int der) {
-    diff->newRows[newEquation].new_vars.insert_element(unknown, der);
+    diff->newRows[newEquation].new_vars[unknown] = der;
   }
 
   struct daestruct_changed* daestruct_change_orig(struct daestruct_input*  original, 

@@ -95,11 +95,11 @@ using namespace boost::icl;
       
       for (int i = 0; i < delta.newRows.size(); i++) {
 	const NewRow& nrow = delta.newRows[i];
-	for (auto it = nrow.ex_vars.begin(); it != nrow.ex_vars.end(); it++)
-	  sigma.insert(rest_dimension+i, it.index(), *it); 
+	for (const std::pair<int, int>& p : nrow.ex_vars)
+	  sigma.insert(rest_dimension+i, get<0>(p), get<1>(p)); 
 
-	for (auto it = nrow.new_vars.begin(); it != nrow.new_vars.end(); it++)
-	  sigma.insert(rest_dimension+i, it.index() + rest_dimension, *it); 
+	for (const std::pair<int, int>& p : nrow.new_vars)
+	  sigma.insert(rest_dimension+i, get<0>(p) + rest_dimension, get<1>(p)); 
 
 	pResult.col_assignment[rest_dimension+i] = -1;
 	pResult.row_assignment[rest_dimension+i] = -1;
