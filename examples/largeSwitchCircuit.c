@@ -221,8 +221,8 @@ struct switch_event switch_sub_circuit(struct circuit* circuit, int n) {
     //i0=i1[j]+iC[j];
     const int eq3 = daestruct_diff_add_equation(sw.diff);
     daestruct_diff_set_new(sw.diff, eq3, iC, 0);
-    daestruct_diff_set_existing(sw.diff, eq2, i1(s), 0);
-    daestruct_diff_set_existing(sw.diff, eq2, i0, 0);
+    daestruct_diff_set_existing(sw.diff, eq3, i1(s), 0);
+    daestruct_diff_set_existing(sw.diff, eq3, i0, 0);
 
     sw.n = n;
     sw.uC = uC;
@@ -277,7 +277,7 @@ void reconcile(struct circuit* circ, struct switch_event* sw, struct daestruct_c
     s->un[7] = -1;
     s->eq[6] = -1;
     s->eq[7] = -1;
-    s->eq[5] = daestruct_changed_new_eq_index(ch, sw->eq3);
+    s->eq[5] = daestruct_changed_new_eq_index(ch, sw->eq1);
   }
 
   for (int j = sw->n+1; j < circ->count; j++) {
@@ -308,6 +308,7 @@ int main(int argc, char** argv) {
     struct daestruct_changed* ch = daestruct_change_orig(sigma, result, se.diff);
 
     for (int k = 0; k < times; k++) {
+      printf("Switch %d out of %d\n", k+1, times);
       daestruct_result_delete(result);
       printf("Running analysis...\n");
       result = daestruct_changed_analyse(ch);
@@ -315,17 +316,19 @@ int main(int argc, char** argv) {
       reconcile(&circuit, &se, ch);
       daestruct_diff_delete(se.diff);
 
-      printf("Next event...\n");
-      se = switch_sub_circuit(&circuit, sw);
+      if (k < times - 1) { 
+	printf("Next event...\n");
+	se = switch_sub_circuit(&circuit, sw);
 
-      struct daestruct_changed* old = ch;
-      ch = daestruct_change(old, result, se.diff);
-      daestruct_changed_delete(old);
+	struct daestruct_changed* old = ch;
+	ch = daestruct_change(old, result, se.diff);
+	daestruct_changed_delete(old);
+      }
     }
     
     daestruct_changed_delete(ch);
-    daestruct_input_delete(sigma);
     daestruct_result_delete(result);
+    daestruct_input_delete(sigma);
 
     free(circuit.subs);
   }

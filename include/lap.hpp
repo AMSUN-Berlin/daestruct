@@ -42,7 +42,8 @@ solution lap(const daestruct::sigma_matrix& cost);
 /**
  * Solve the integer linear assignment problem using an older (partiall) assignment
  */
-solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _colsol, const std::vector<int>& _rowsol);
+solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _u, const std::vector<int>& _v, 
+		   const std::vector<int>& _rowsol, const std::vector<int>& _colsol);
 
 std::ostream& operator<<(std::ostream& o, const solution& s);
 

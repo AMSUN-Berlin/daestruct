@@ -41,19 +41,30 @@ namespace daestruct {
 
 	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
 	    const int j = col_iter.index2();
-	    const int a = -1 * *col_iter + d[i];
-	    if (a > c[j]) c[j] = a;
+	    const int a = -1 * *col_iter + c[i];
+	    if (a > d[j]) {
+	      //std::cout << "d[" << j << "] = " << a << "(max row " << i << " = " << a << " > " << d[j] << ")" << std::endl; 
+	      d[j] = a;
+	    }
 	  }
 	}
 
 	for (unsigned int i = 0; i < sigma.dimension; i++) {
 	  const int j = assignment[i];
-	  const int c2 = c[j] + sigma(i, j);
+	  const int c2 = d[j] + sigma(i, j);
 	  
-	  if (d[i] != c2)
+	  if (c[i] != c2) {
 	    converged = false;
+	  }
 	  
-	  d[i] = c2;
+	  //std::cout << "c[" << i << "] = " << c2 << "(because d[" << j << "] = " << d[j] << ")" << std::endl;
+
+	  c[i] = c2;
+	  /*
+	  for (unsigned int j = 0; j < sigma.dimension; j++)
+	    if (d[j] < c[i] - sigma(i,j))
+	      std::cout << "Violated dual in fix-point: " << "c[" << i << "] = " << c[i] << ", d[" << j << "] = " << d[j] << std::endl;
+	  */
 	}
       }
     }
@@ -64,14 +75,28 @@ namespace daestruct {
       /* solve linear assignment problem */
       solution assignment = lap(sigma);
 
-      std::cout << "lap solved" << std::endl;
+      std::cout << "lap solved: " << assignment.cost << std::endl;
       AnalysisResult result;
       result.row_assignment = std::move(assignment.rowsol);
       result.col_assignment = std::move(assignment.colsol);
       result.c.resize(dimension);
       result.d.resize(dimension);
 
+      /*
+      std::cout << assignment.v << std::endl;
+      std::cout << assignment.u << std::endl;
+      */
+
+      /*
+      for (int i = 0; i < dimension; i++) {
+	const int j = result.row_assignment[i];
+	if (assignment.u[i] - assignment.v[j] < sigma(i,j))
+	  std::cout << i << ", " << j << " violates dual " << std::endl;
+      }
+      */
+
       /* run fix-point algorithm */
+      std::cout << "Calculating smallest dual" << std::endl;
       solveByFixedPoint(result.row_assignment, sigma, result.c, result.d);
       //std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
 

@@ -36,6 +36,7 @@
 */
 
 #include <iostream>
+#include <algorithm>
 #include "lap.hpp"
 #include "prettyprint.hpp"
 
@@ -49,7 +50,8 @@ std::ostream& operator<<(std::ostream& o, const solution& s) {
   return o;
 }
 
-solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _colsol, const std::vector<int>& _rowsol) {
+solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _u, const std::vector<int>& _v,
+		   const std::vector<int>& _rowsol, const std::vector<int>& _colsol) {
   const long dim = assigncost.dimension;
   std::vector<int> u(dim),v(dim);
 
@@ -61,19 +63,32 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
 
   std::vector<int> colsol(_colsol), rowsol(_rowsol); //TODO avoid this copying?
 
-  //TODO: this can be optimized with more fine grained delta information
-  for (int i = 0; i < dim; i++) {
-    const int j = rowsol[i];
-    if (j >= 0) {
-      v[i] = assigncost(i, j);
+  for (int j = 0; j < dim; j++) {
+    const int i = colsol[j];
+    if (i >= 0) {
+      v[j] = _v[j];
     } else {
-      free[numfree++] = i;
+      v[j] = BIG;
+      for (int i2 = 0; i2 < dim; i2++)
+	v[j] = std::min(v[j], assigncost(i2, j) - _u[i2]);
     }
   }
+
+  for (int i = _rowsol.size() - 1; i >= 0 && _rowsol[i] < 0; i--)
+    free[numfree++] = i;
+
+  /*
+  std::cout << "Running delta analysis on " << numfree << " unassigned rows" << std::endl;
+  std::cout << _rowsol << std::endl;
+  std::cout << _colsol << std::endl;
+  std::cout << u << std::endl;
+  std::cout << v << std::endl;
+  */
 
   // AUGMENT SOLUTION for each free row.
   for (int f = 0; f < numfree; f++) {
     int freerow = free[f];       // start row of augmenting path.
+    //std::cout << "Row: " << freerow << std::endl;
     // Dijkstra shortest path algorithm.
     // runs until unassigned column added to shortest path tree.
     for (int j = 0; j < dim; j++) { 
@@ -90,6 +105,7 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
     int last, min, endofpath;
 
     do {
+      //std::cout << "up: " << up << " low: " << low << std::endl;
       if (up == low)         // no more columns to be scanned for current minimum.
       {
         last = low - 1; 
@@ -123,6 +139,7 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
       }
 
       if (!unassignedfound) {
+	//std::cout << "Found no unassigned " << std::endl;
         // update 'distances' between freerow and all unscanned columns, via next scanned column.
         int j1 = collist[low]; 
         low++; 
@@ -157,6 +174,8 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
     }
     while (!unassignedfound);
 
+    //std::cout << "done" << std::endl;
+
     // update column prices.
     for (int k = 0; k <= last; k++) { 
       const int j1 = collist[k]; 
@@ -170,6 +189,7 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
       const int j1 = endofpath; 
       endofpath = rowsol[i]; 
       rowsol[i] = j1;
+      //std::cout << "reset: " << i << std::endl;
       if (i == freerow) 
 	break;
     }
@@ -180,6 +200,7 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
   int lapcost = 0;
   for (unsigned int i = 0; i < rowsol.size(); i++) {
     const int j = rowsol[i];
+    //std::cout << "u[" << i << "] = " << "assigncost(" << i << "," << j << ") - v[" << j << "] = " <<  assigncost(i,j) << " - " << v[j] << std::endl;
     u[i] = assigncost(i,j) - v[j];
     lapcost = lapcost + assigncost(i,j); 
   }
@@ -197,6 +218,7 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
   sol.colsol = std::move(colsol);
   sol.cost = lapcost;
 
+  //std::cout << "finished delta assignment" << std::endl;
   return sol;
 }
 
@@ -458,6 +480,12 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   delete[] collist;
   delete[] matches;
   delete[] d;
+
+  /*
+  std::cout << "Analysis done " << std::endl;
+  std::cout << rowsol << std::endl;
+  std::cout << colsol << std::endl;
+  */
 
   solution sol;
   sol.u = std::move(u);

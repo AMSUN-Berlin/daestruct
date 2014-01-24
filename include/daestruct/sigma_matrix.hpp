@@ -89,14 +89,14 @@ namespace daestruct {
       s.flags (os.flags ());
       s.imbue (os.getloc ());
       s.precision (os.precision ());
-      s << '[' << d << ',' << d << "](";
+      s << '[' << d << ',' << d << "]" << std::endl << "(";
       if (d > 0) {
 	s << '(' ;
 	nicePrint(s, sigma(0, 0));
 	for (long j = 1; j < d; ++ j) {
 	  s << ','; nicePrint(s, sigma(0, j));
 	}
-	s << ')';    
+	s << ')' << std::endl;    
 	for (long i = 1; i < d; ++ i) {
 	  s << ",(" ;
 	  nicePrint(s, sigma(i, 0));
@@ -104,7 +104,7 @@ namespace daestruct {
 	    s << ',';
 	    nicePrint(s, sigma(i, j));
 	  }
-	  s << ')';
+	  s << ')' << std::endl;
 	}
       }
       s << ')';

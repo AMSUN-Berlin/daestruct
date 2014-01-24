@@ -56,11 +56,11 @@ extern "C" {
   }
 
   void daestruct_diff_set_existing(struct daestruct_diff* diff, int newEquation, int unknown, int der) {
-    diff->newRows[newEquation].ex_vars[unknown] = der;
+    diff->newRows[newEquation].ex_vars[unknown] = -der;
   }
 
   void daestruct_diff_set_new(struct daestruct_diff* diff, int newEquation, int unknown, int der) {
-    diff->newRows[newEquation].new_vars[unknown] = der;
+    diff->newRows[newEquation].new_vars[unknown] = -der;
   }
 
   struct daestruct_changed* daestruct_change_orig(struct daestruct_input*  original, 
@@ -76,11 +76,11 @@ extern "C" {
   }
 
   int daestruct_changed_new_un_index(struct daestruct_changed* changed, int new_unknown) {
-    return new_unknown + changed->rest_dimension;
+    return new_unknown + changed->old_columns;
   }
 
   int daestruct_changed_new_eq_index(struct daestruct_changed* changed, int new_equation) {
-    return new_equation + changed->rest_dimension;
+    return new_equation + changed->old_rows;
   }
 
   int daestruct_changed_ex_un_index(struct daestruct_changed* changed, int un) {

@@ -47,11 +47,14 @@ namespace daestruct {
     private:
       void applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta);
     public:
-      long rest_dimension;
-      long dimension;
+      int old_columns;
+      int old_rows;
+      int dimension;
       sigma_matrix sigma;
       std::vector<int> row_assignment;
       std::vector<int> col_assignment;
+      std::vector<int> dual_columns;
+      std::vector<int> dual_rows;
       boost::icl::interval_map<int, int> colOffsets;
       boost::icl::interval_map<int, int> rowOffsets;
 
