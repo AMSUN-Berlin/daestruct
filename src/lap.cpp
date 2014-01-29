@@ -37,8 +37,98 @@
 
 #include <iostream>
 #include <algorithm>
+#include <boost/heap/fibonacci_heap.hpp>
 #include "lap.hpp"
 #include "prettyprint.hpp"
+
+/**
+ * comparing nodes based on a distance-map 
+ */
+struct node_compare {
+  std::vector<int> dist;
+  std::vector<bool> def;
+
+  void set(int node, int d) {
+    def[node] = true;
+    dist[node] = d;
+  }
+
+  node_compare(int dim) : dist(dim), def(dim) {};
+
+  /* this is a 'greater than' because boost implements max-heaps */
+  bool operator()(const int& n1, const int& n2) const { 
+    return (def[n1] || (!def[n2] && (dist[n1] > dist[n2])));
+  }
+  
+};
+
+void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
+  /* vector of 'ready' columns */
+  std::vector<int> ready;
+
+  /* vector of previous rows for each column in the augmenting path */
+  std::vector<int> prev(assigncost.dimension);
+  
+  /* comparator implementation, based on distances */
+  node_compare cmp(assigncost.dimension);
+
+  /* our priority queue, lent from boost with our custom comparator */
+  typedef boost::heap::fibonacci_heap<int,  boost::heap::compare<node_compare>> priority_queue;
+  priority_queue pq(cmp);
+  std::vector<priority_queue::handle_type> handles(assigncost.dimension);
+
+  cmp.set(start, 0);
+    
+  /* add all rows to queue */
+  for (int i = 0; i < assigncost.dimension; i++)
+    handles[i] = pq.push(i);
+  
+  int endofpath = -1;
+  int min = 0;
+  while(!pq.empty() && endofpath < 0) {
+    const int i = pq.top(); pq.pop();
+    min = cmp.dist[i];
+    auto row_iter = assigncost.findRow(i);
+    
+    /* all neighbours via columns */
+    for(auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
+      const int j = col_iter.index2();
+      const int neighbour = colsol[j];
+      
+      if (neighbour < 0) {
+	/* unassigned column. done. */
+	prev[j] = i;
+	endofpath = j;
+	break;
+      } else {
+	const int alt = cmp.dist[i] + (assigncost(i, j) - v[j]);      
+	if (!cmp.def[neighbour] || (alt < cmp.dist[neighbour])) {
+	  /* update distance */
+	  cmp.set(neighbour, alt);
+	  prev[j] = i;
+	  ready.push_back(j);
+	  pq.update(handles[neighbour]);
+	}
+      }
+    }        
+  }
+
+  /* update column prices */
+  for (int j : ready) {
+    v[j] = v[j] + cmp.dist[j] - min;
+  }
+  
+  /* augment solution */
+  int i;
+  do {
+    i = prev[endofpath]; 
+    colsol[endofpath] = i; 
+    const int j1 = endofpath; 
+    endofpath = rowsol[i]; 
+    rowsol[i] = j1;
+  }
+  while(i != start);
+}
 
 std::ostream& operator<<(std::ostream& o, const solution& s) {
   o << "solution " << 
