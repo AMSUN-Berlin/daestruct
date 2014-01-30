@@ -41,11 +41,11 @@ using namespace boost::icl;
 
       /* run fix-point algorithm */
       /*
-      std::cout << "Running fixed-point" << std::endl;      
-      std::cout << assignment.cost << std::endl;
+      std::cout << "Delta-LAP solved: " << assignment.cost << std::endl;
+      
       std::cout << result.row_assignment << std::endl;
       std::cout << result.col_assignment << std::endl;
-
+      
       std::cout << assignment.v << std::endl;
       std::cout << assignment.u << std::endl;
 

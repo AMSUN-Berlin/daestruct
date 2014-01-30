@@ -73,10 +73,10 @@ namespace daestruct {
       const AnalysisResult res = pendulum.pryceAlgorithm();      
 
       /* x and y appear two-times differentiated */
-      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,2,0}) );
+      BOOST_CHECK_EQUAL( res.d, std::vector<int>({2,2,0}) );
       
       /* x² + y² = 1 needs to be two-times differentiated */
-      BOOST_CHECK_EQUAL( res.d, std::vector<int>({2,0,0}) );
+      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,0,0}) );
     }
 
    
@@ -110,8 +110,8 @@ namespace daestruct {
 
       const AnalysisResult res = pendulum.pryceAlgorithm();      
 
-      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,2,1,1,0}) );
-      BOOST_CHECK_EQUAL( res.d, std::vector<int>({2,1,1,0,0}) );
+      BOOST_CHECK_EQUAL( res.d, std::vector<int>({2,2,1,1,0}) );
+      BOOST_CHECK_EQUAL( res.c, std::vector<int>({2,1,1,0,0}) );
     }
     
   }

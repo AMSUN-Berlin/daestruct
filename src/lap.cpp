@@ -45,77 +45,105 @@
  * comparing nodes based on a distance-map 
  */
 struct node_compare {
-  std::vector<int> dist;
-  std::vector<bool> def;
+  std::vector<int>* dist;
 
-  void set(int node, int d) {
-    def[node] = true;
-    dist[node] = d;
-  }
-
-  node_compare(int dim) : dist(dim), def(dim) {};
+  node_compare(std::vector<int>* d) : dist(d) {};
 
   /* this is a 'greater than' because boost implements max-heaps */
   bool operator()(const int& n1, const int& n2) const { 
-    return (def[n1] || (!def[n2] && (dist[n1] > dist[n2])));
+    return dist->at(n1) > dist->at(n2);
   }
   
 };
 
 void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
+  /* is a column in "todo"? */
+  std::vector<bool> in_todo(assigncost.dimension, true);
+  
   /* vector of 'ready' columns */
   std::vector<int> ready;
 
   /* vector of previous rows for each column in the augmenting path */
-  std::vector<int> prev(assigncost.dimension);
+  std::vector<int> prev(assigncost.dimension, start);
+
+  /* scan vector */
+  std::vector<int> scan;
   
   /* comparator implementation, based on distances */
-  node_compare cmp(assigncost.dimension);
+  std::vector<int> dist;
+  dist.reserve(assigncost.dimension);
+  for(int j = 0; j < assigncost.dimension; j++) {
+    dist.push_back(assigncost(start, j) - v[j]);
+  }
+
+  node_compare cmp(&dist);
 
   /* our priority queue, lent from boost with our custom comparator */
   typedef boost::heap::fibonacci_heap<int,  boost::heap::compare<node_compare>> priority_queue;
   priority_queue pq(cmp);
   std::vector<priority_queue::handle_type> handles(assigncost.dimension);
 
-  cmp.set(start, 0);
-    
-  /* add all rows to queue */
-  for (int i = 0; i < assigncost.dimension; i++)
-    handles[i] = pq.push(i);
-  
+  for (int j = 0; j < assigncost.dimension; j++)
+    handles[j] = pq.push(j);
+
   int endofpath = -1;
   int min = 0;
-  while(!pq.empty() && endofpath < 0) {
-    const int i = pq.top(); pq.pop();
-    min = cmp.dist[i];
-    auto row_iter = assigncost.findRow(i);
-    
-    /* all neighbours via columns */
-    for(auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
-      const int j = col_iter.index2();
-      const int neighbour = colsol[j];
-      
-      if (neighbour < 0) {
-	/* unassigned column. done. */
-	prev[j] = i;
-	endofpath = j;
-	break;
-      } else {
-	const int alt = cmp.dist[i] + (assigncost(i, j) - v[j]);      
-	if (!cmp.def[neighbour] || (alt < cmp.dist[neighbour])) {
-	  /* update distance */
-	  cmp.set(neighbour, alt);
-	  prev[j] = i;
-	  ready.push_back(j);
-	  pq.update(handles[neighbour]);
+  do {
+    if (scan.empty()) {
+      while (!pq.empty() && !in_todo[pq.top()])
+	pq.pop();
+
+      min = dist[pq.top()];
+      while(!pq.empty() && dist[pq.top()] == min) {
+	const int j = pq.top();
+	if (in_todo[j]) {
+	  if (colsol[j] < 0) {
+	    endofpath = j;
+	    goto augment;
+	  }
+	  scan.push_back(j);
+	  in_todo[j] = false;
+	  pq.pop();
 	}
       }
-    }        
-  }
+    }
 
+    const int j1 = scan.back();
+    scan.pop_back();
+    const int i = colsol[j1];
+    ready.push_back(j1);
+
+    auto row = assigncost.findRow(i);
+    const int h = assigncost(i, j1) - v[j1];
+    //sparse version of: forall j in TODO
+    for (auto col = row.begin(); col != row.end() ; col++) {
+      if (!in_todo[col.index2()])
+	continue;
+
+      const int j = col.index2();
+      const int c_red = *col - v[col.index2()] - h;
+      if (min + c_red < dist[j]) {
+	dist[j] = min + c_red;
+	prev[j] = i;
+	pq.update(handles[j]);
+	if (dist[j] == min) {
+	  if (colsol[j] < 0) {
+	    endofpath = j;
+	    goto augment;
+	  } else {
+	    scan.push_back(j);
+	    in_todo[j] = false;	    
+	  }
+	}	
+      }      
+    }
+
+  } while(true);
+
+ augment:
   /* update column prices */
   for (int j : ready) {
-    v[j] = v[j] + cmp.dist[j] - min;
+    v[j] = v[j] + dist[j] - min;
   }
   
   /* augment solution */
@@ -147,7 +175,6 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
 
   int numfree = 0;
   int* free = new int[dim];       // list of unassigned rows.
-  int* collist = new int[dim];    // list of columns to be scanned in various ways.
   int* d = new int[dim];         // 'cost-distance' in augmenting path calculation.
   int* pred = new int[dim];       // row-predecessor of column in augmenting/alternating path.
 
@@ -164,126 +191,21 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
     }
   }
 
-  for (int i = _rowsol.size() - 1; i >= 0 && _rowsol[i] < 0; i--)
-    free[numfree++] = i;
+  for (int i = 0; i < _rowsol.size(); i++)
+    if (_rowsol[i] < 0) 
+      free[numfree++] = i;
 
   /*
   std::cout << "Running delta analysis on " << numfree << " unassigned rows" << std::endl;
   std::cout << _rowsol << std::endl;
   std::cout << _colsol << std::endl;
   std::cout << u << std::endl;
-  std::cout << v << std::endl;
+  std::cout << v << std::endl;  
   */
 
   // AUGMENT SOLUTION for each free row.
   for (int f = 0; f < numfree; f++) {
-    int freerow = free[f];       // start row of augmenting path.
-    //std::cout << "Row: " << freerow << std::endl;
-    // Dijkstra shortest path algorithm.
-    // runs until unassigned column added to shortest path tree.
-    for (int j = 0; j < dim; j++) { 
-      d[j] = assigncost(freerow,j) - v[j]; 
-      pred[j] = freerow;
-      collist[j] = j;        // init column list.
-    }
-
-    int low = 0; // columns in 0..low-1 are ready, now none.
-    int up = 0;  // columns in low..up-1 are to be scanned for current minimum, now none.
-             // columns in up..dim-1 are to be considered later to find new minimum, 
-             // at this stage the list simply contains all columns 
-    bool unassignedfound = false;
-    int last, min, endofpath;
-
-    do {
-      //std::cout << "up: " << up << " low: " << low << std::endl;
-      if (up == low)         // no more columns to be scanned for current minimum.
-      {
-        last = low - 1; 
-
-        // scan columns for up..dim-1 to find all indices for which new minimum occurs.
-        // store these indices between low..up-1 (increasing up). 
-        min = d[collist[up++]]; 
-        for (int k = up; k < dim; k++) {
-          const int j = collist[k]; 
-          const int h = d[j];
-          if (h <= min) {
-            if (h < min)     // new minimum.
-            { 
-              up = low;      // restart list at index low.
-              min = h;
-            }
-            // new index with same minimum, put on undex up, and extend list.
-            collist[k] = collist[up]; 
-            collist[up++] = j; 
-          }
-        }
-
-        // check if any of the minimum columns happens to be unassigned.
-        // if so, we have an augmenting path right away.
-        for (int k = low; k < up; k++) 
-          if (colsol[collist[k]] < 0) {
-            endofpath = collist[k];
-            unassignedfound = true;
-            break;
-          }
-      }
-
-      if (!unassignedfound) {
-	//std::cout << "Found no unassigned " << std::endl;
-        // update 'distances' between freerow and all unscanned columns, via next scanned column.
-        int j1 = collist[low]; 
-        low++; 
-        int i = colsol[j1]; 
-        int h = assigncost(i,j1) - v[j1] - min;
-
-        for (int k = up; k < dim; k++) {
-          const int j = collist[k]; 
-          const int v2 = assigncost(i,j) - v[j] - h;
-          if (v2 < d[j])
-          {
-            pred[j] = i;
-            if (v2 == min)   // new column found at same minimum value
-	    {  if (colsol[j] < 0) 
-              {
-                // if unassigned, shortest augmenting path is complete.
-                endofpath = j;
-                unassignedfound = true;
-                break;
-              }
-              // else add to list to be scanned right away.
-              else 
-              { 
-                collist[k] = collist[up]; 
-                collist[up++] = j; 
-              }
-	    }
-            d[j] = v2;
-          }
-        }
-      } 
-    }
-    while (!unassignedfound);
-
-    //std::cout << "done" << std::endl;
-
-    // update column prices.
-    for (int k = 0; k <= last; k++) { 
-      const int j1 = collist[k]; 
-      v[j1] = v[j1] + d[j1] - min;
-    }
-
-    // reset row and column assignments along the alternating path.
-    do {
-      const int i = pred[endofpath]; 
-      colsol[endofpath] = i; 
-      const int j1 = endofpath; 
-      endofpath = rowsol[i]; 
-      rowsol[i] = j1;
-      //std::cout << "reset: " << i << std::endl;
-      if (i == freerow) 
-	break;
-    }
-    while(true);
+    augment(assigncost, v, free[f], rowsol, colsol);
   }
 
   // calculate optimal cost.
@@ -298,7 +220,6 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
   // free reserved memory.
   delete[] pred;
   delete[] free;
-  delete[] collist;
   delete[] d;
 
   solution sol;
@@ -317,13 +238,11 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
 
   std::vector<int> u(dim),v(dim),rowsol(dim),colsol(dim);
   
-  bool unassignedfound;
-  int  i, imin, numfree = 0, prvnumfree, f, i0, k, freerow, *pred, *free;
-  int  j, j1, j2=0, endofpath, last=-1, low, up, *collist, *matches;  
-  int min=0, h, umin, usubmin, v2, *d;
+  int  i, imin, numfree = 0, prvnumfree, f, i0, k, *pred, *free;
+  int  j, j1, j2=0, *matches;  
+  int min=0, h, umin, usubmin, *d;
 
   free = new int[dim];       // list of unassigned rows.
-  collist = new int[dim];    // list of columns to be scanned in various ways.
   matches = new int[dim];    // counts how many times a row could be assigned.
   d = new int[dim];         // 'cost-distance' in augmenting path calculation.
   pred = new int[dim];       // row-predecessor of column in augmenting/alternating path.
@@ -443,117 +362,12 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   }
   while (loopcnt < 2);       // repeat once.
 
+  std::cout << "Done LAP initialization. " << numfree << " unassigned rows remaining." << std::endl;
+  
   // AUGMENT SOLUTION for each free row.
-  for (f = 0; f < numfree; f++) 
-  {
-    freerow = free[f];       // start row of augmenting path.
-
-    // Dijkstra shortest path algorithm.
-    // runs until unassigned column added to shortest path tree.
-    for (j = 0; j < dim; j++)  
-    { 
-      d[j] = assigncost(freerow,j) - v[j]; 
-      pred[j] = freerow;
-      collist[j] = j;        // init column list.
-    }
-
-    low = 0; // columns in 0..low-1 are ready, now none.
-    up = 0;  // columns in low..up-1 are to be scanned for current minimum, now none.
-             // columns in up..dim-1 are to be considered later to find new minimum, 
-             // at this stage the list simply contains all columns 
-    unassignedfound = false;
-
-    do
-    {
-      if (up == low)         // no more columns to be scanned for current minimum.
-      {
-        last = low - 1; 
-
-        // scan columns for up..dim-1 to find all indices for which new minimum occurs.
-        // store these indices between low..up-1 (increasing up). 
-        min = d[collist[up++]]; 
-        for (k = up; k < dim; k++) 
-        {
-          j = collist[k]; 
-          h = d[j];
-          if (h <= min)
-          {
-            if (h < min)     // new minimum.
-            { 
-              up = low;      // restart list at index low.
-              min = h;
-            }
-            // new index with same minimum, put on undex up, and extend list.
-            collist[k] = collist[up]; 
-            collist[up++] = j; 
-          }
-        }
-
-        // check if any of the minimum columns happens to be unassigned.
-        // if so, we have an augmenting path right away.
-        for (k = low; k < up; k++) 
-          if (colsol[collist[k]] < 0) 
-          {
-            endofpath = collist[k];
-            unassignedfound = true;
-            break;
-          }
-      }
-
-      if (!unassignedfound) 
-      {
-        // update 'distances' between freerow and all unscanned columns, via next scanned column.
-        j1 = collist[low]; 
-        low++; 
-        i = colsol[j1]; 
-        h = assigncost(i,j1) - v[j1] - min;
-
-        for (k = up; k < dim; k++) 
-        {
-          j = collist[k]; 
-          v2 = assigncost(i,j) - v[j] - h;
-          if (v2 < d[j])
-          {
-            pred[j] = i;
-            if (v2 == min)   // new column found at same minimum value
-	    {  if (colsol[j] < 0) 
-              {
-                // if unassigned, shortest augmenting path is complete.
-                endofpath = j;
-                unassignedfound = true;
-                break;
-              }
-              // else add to list to be scanned right away.
-              else 
-              { 
-                collist[k] = collist[up]; 
-                collist[up++] = j; 
-              }
-	    }
-            d[j] = v2;
-          }
-        }
-      } 
-    }
-    while (!unassignedfound);
-
-    // update column prices.
-    for (k = 0; k <= last; k++)  
-    { 
-      j1 = collist[k]; 
-      v[j1] = v[j1] + d[j1] - min;
-    }
-
-    // reset row and column assignments along the alternating path.
-    do
-    {
-      i = pred[endofpath]; 
-      colsol[endofpath] = i; 
-      j1 = endofpath; 
-      endofpath = rowsol[i]; 
-      rowsol[i] = j1;
-    }
-    while (i != freerow);
+  for (f = 0; f < numfree; f++) {
+    //std::cout << f << " / " << numfree << std::endl;
+    augment(assigncost, v, free[f], rowsol, colsol);
   }
 
   // calculate optimal cost.
@@ -567,7 +381,6 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   // free reserved memory.
   delete[] pred;
   delete[] free;
-  delete[] collist;
   delete[] matches;
   delete[] d;
 
@@ -576,7 +389,6 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   std::cout << rowsol << std::endl;
   std::cout << colsol << std::endl;
   */
-
   solution sol;
   sol.u = std::move(u);
   sol.v = std::move(v);

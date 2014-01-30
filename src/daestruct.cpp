@@ -44,11 +44,11 @@ extern "C" {
   }
 
   int daestruct_result_equation_index(struct daestruct_result* result, int equation) {
-    return result->d[equation];
+    return result->c[equation];
   }
 
   int daestruct_result_variable_index(struct daestruct_result* result, int variable) {
-    return result->c[variable];
+    return result->d[variable];
   }
 
   void daestruct_result_delete(struct daestruct_result* result) {

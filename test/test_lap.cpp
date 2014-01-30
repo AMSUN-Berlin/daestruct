@@ -26,6 +26,163 @@
 
 namespace daestruct {
   namespace test {
+
+    void test_LAP_neg_delta() {
+      sigma_matrix sigma ( 3 );
+
+      /*
+	    1  2  3
+	   ---------
+	A |-1 -1  X |
+	  |---------|
+	B |-2 -1 -1 |
+	  |---------|
+	C | X -3 -1 |
+	  -----------
+       */
+
+      sigma.insert(0, 0, -1);
+      sigma.insert(0, 1, -1);
+
+      sigma.insert(1, 0, -2);
+      sigma.insert(1, 1, -1);
+      sigma.insert(1, 2, -1);
+
+      sigma.insert(2, 1, -3);
+      sigma.insert(2, 2, -1);
+
+      std::vector<int> rowsol({-1, 0, 1});
+      std::vector<int> colsol({ 1, 2, -1});
+
+      std::vector<int> u({ 0, 0, 0});
+      std::vector<int> v({ -2, -3, 0});
+
+      solution assignment = delta_lap(sigma, u, v, rowsol, colsol);
+      
+      BOOST_CHECK_EQUAL( assignment.cost, -5 );
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,2,1}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,2,1}) );      
+    }
+
+    void test_LAP_delta() {
+      sigma_matrix sigma ( 3 );
+
+      /*
+	    1  2  3
+	   ---------
+	A | 1  1  X |
+	  |---------|
+	B | 2  1  1 |
+	  |---------|
+	C | X  3  1 |
+	  -----------
+       */
+
+      sigma.insert(0, 0, 1);
+      sigma.insert(0, 1, 1);
+
+      sigma.insert(1, 0, 2);
+      sigma.insert(1, 1, 1);
+      sigma.insert(1, 2, 1);
+
+      sigma.insert(2, 1, 3);
+      sigma.insert(2, 2, 1);
+
+      std::vector<int> rowsol({-1, 0, 1});
+      std::vector<int> colsol({ 1, 2, -1});
+
+      std::vector<int> u({ 0, 0, 0});
+      std::vector<int> v({ 2, 3, 0});
+
+      solution assignment = delta_lap(sigma, u, v, rowsol, colsol);
+      
+      BOOST_CHECK_EQUAL( assignment.cost, 4 );
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({1,0,2}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({1,0,2}) );      
+    }
+    
+    void test_LAP_taxi_example() {
+      sigma_matrix sigma ( 5 );
+
+      //from: https://bisor.wiwi.uni-kl.de/orwiki/Assignment_problem:_Hungarian_method_3#Example_2_.E2.80.93_Minimazation_problem
+      sigma.insert(0, 0, 12);
+      sigma.insert(0, 1, 8);
+      sigma.insert(0, 2, 11);
+      sigma.insert(0, 3, 18);
+      sigma.insert(0, 4, 11);
+
+      sigma.insert(1, 0, 14);
+      sigma.insert(1, 1, 22);
+      sigma.insert(1, 2, 8);
+      sigma.insert(1, 3, 12);
+      sigma.insert(1, 4, 14);
+
+      sigma.insert(2, 0, 14);
+      sigma.insert(2, 1, 14);
+      sigma.insert(2, 2, 16);
+      sigma.insert(2, 3, 14);
+      sigma.insert(2, 4, 15);
+
+      sigma.insert(3, 0, 19);
+      sigma.insert(3, 1, 11);
+      sigma.insert(3, 2, 14);
+      sigma.insert(3, 3, 17);
+      sigma.insert(3, 4, 15);
+
+      sigma.insert(4, 0, 13);
+      sigma.insert(4, 1, 9);
+      sigma.insert(4, 2, 17);
+      sigma.insert(4, 3, 20);
+      sigma.insert(4, 4, 11);
+
+      solution assignment = lap(sigma);
+
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,2,3,1,4}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,3,1,2,4}) );
+
+      std::vector<int> partial_r(assignment.rowsol);
+      std::vector<int> partial_c(assignment.colsol);
+      std::vector<int> u(assignment.u);
+      std::vector<int> v(assignment.v);
+
+      partial_r[0] = -1;
+      partial_c[0] = -1;
+      solution assignment2 = delta_lap(sigma, u, v, partial_r, partial_c);
+
+      BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<int>({0,2,3,1,4}) );      
+      BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<int>({0,3,1,2,4}) );
+
+    }
+
+    void test_LAP_on_lifted_identity() {
+      sigma_matrix sigma ( 5 );
+    
+      sigma.insert(0, 0, 4);
+      sigma.insert(1, 1, 4);
+      sigma.insert(2, 2, 4);
+      sigma.insert(3, 3, 4);
+      sigma.insert(4, 4, 4);
+
+      sigma.insert(1, 0, 2);
+      sigma.insert(2, 0, 2);
+      sigma.insert(3, 0, 2);
+      sigma.insert(4, 0, 2);
+
+      sigma.insert(2, 1, 1);
+      sigma.insert(3, 1, 1);
+      sigma.insert(4, 1, 1);
+
+      sigma.insert(3, 2, 0);
+      sigma.insert(4, 2, 0);
+
+      sigma.insert(4, 3, 0);
+
+      solution assignment = lap(sigma);
+      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,1,2,3,4}) );      
+    }
+    
     void test_LAP_on_identity() {
       sigma_matrix sigma ( 5 );
 

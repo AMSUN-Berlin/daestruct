@@ -22,7 +22,15 @@
 
 namespace daestruct {
   namespace test {
+
+    void test_LAP_neg_delta();
+
+    void test_LAP_delta();
+
+    void test_LAP_taxi_example();
     
+    void test_LAP_on_lifted_identity();
+
     void test_LAP_on_identity();
 
   }

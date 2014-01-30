@@ -105,11 +105,9 @@ namespace daestruct {
 
       const AnalysisResult res = circuit.pryceAlgorithm();      
 
-      /* x and y appear two-times differentiated */
-      BOOST_CHECK_EQUAL( res.c, std::vector<int>({1, 1, 1, 1, 1, 0, 1, 1, 0, 1}) );
+      BOOST_CHECK_EQUAL( res.d, std::vector<int>({1, 1, 1, 1, 1, 0, 1, 1, 0, 1}) );
       
-      /* x² + y² = 1 needs to be two-times differentiated */
-      BOOST_CHECK_EQUAL( res.d, std::vector<int>({1, 1, 1, 0, 0, 1, 1, 1, 0, 1}) );
+      BOOST_CHECK_EQUAL( res.c, std::vector<int>({1, 1, 1, 0, 0, 1, 1, 1, 0, 1}) );
 
     };
 
