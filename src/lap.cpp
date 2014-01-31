@@ -58,10 +58,11 @@ struct node_compare {
 
 void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
   /* is a column in "todo"? */
-  std::vector<bool> in_todo(assigncost.dimension, true);
+  std::vector<bool> in_todo(assigncost.dimension, false);
   
   /* vector of 'ready' columns */
   std::vector<int> ready;
+  std::vector<bool> is_ready(assigncost.dimension, false);
 
   /* vector of previous rows for each column in the augmenting path */
   std::vector<int> prev(assigncost.dimension, start);
@@ -83,8 +84,11 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
   priority_queue pq(cmp);
   std::vector<priority_queue::handle_type> handles(assigncost.dimension);
 
-  for (int j = 0; j < assigncost.dimension; j++)
-    handles[j] = pq.push(j);
+  auto start_row = assigncost.findRow(start);
+  for (auto col = start_row.begin(); col != start_row.end() ; col++) {
+    handles[col.index2()] = pq.push(col.index2());
+    in_todo[col.index2()] = true;
+  }  
 
   int endofpath = -1;
   int min = 0;
@@ -112,20 +116,21 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
     scan.pop_back();
     const int i = colsol[j1];
     ready.push_back(j1);
+    is_ready[j1] = true;
 
     auto row = assigncost.findRow(i);
     const int h = assigncost(i, j1) - v[j1];
     //sparse version of: forall j in TODO
     for (auto col = row.begin(); col != row.end() ; col++) {
-      if (!in_todo[col.index2()])
+      const int j = col.index2();
+      if (is_ready[j])
 	continue;
 
-      const int j = col.index2();
       const int c_red = *col - v[col.index2()] - h;
       if (min + c_red < dist[j]) {
 	dist[j] = min + c_red;
 	prev[j] = i;
-	pq.update(handles[j]);
+	
 	if (dist[j] == min) {
 	  if (colsol[j] < 0) {
 	    endofpath = j;
@@ -134,7 +139,14 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
 	    scan.push_back(j);
 	    in_todo[j] = false;	    
 	  }
-	}	
+	} else {
+	  if (!in_todo[j]) {
+	    handles[j] = pq.push(j);
+	    in_todo[j] = true;
+	  } else {
+	    pq.update(handles[j]);
+	  }
+	}
       }      
     }
 
