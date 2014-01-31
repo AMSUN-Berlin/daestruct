@@ -71,11 +71,7 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
   std::vector<int> scan;
   
   /* comparator implementation, based on distances */
-  std::vector<int> dist;
-  dist.reserve(assigncost.dimension);
-  for(int j = 0; j < assigncost.dimension; j++) {
-    dist.push_back(assigncost(start, j) - v[j]);
-  }
+  std::vector<int> dist(assigncost.dimension);
 
   node_compare cmp(&dist);
 
@@ -85,6 +81,11 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
   std::vector<priority_queue::handle_type> handles(assigncost.dimension);
 
   auto start_row = assigncost.findRow(start);
+
+  /* iterate twice to get correct order in queue */
+  for (auto col = start_row.begin(); col != start_row.end() ; col++)
+    dist[col.index2()] = *col - v[col.index2()];
+
   for (auto col = start_row.begin(); col != start_row.end() ; col++) {
     handles[col.index2()] = pq.push(col.index2());
     in_todo[col.index2()] = true;
@@ -127,7 +128,7 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
 	continue;
 
       const int c_red = *col - v[col.index2()] - h;
-      if (min + c_red < dist[j]) {
+      if (!in_todo[j] || min + c_red < dist[j]) {
 	dist[j] = min + c_red;
 	prev[j] = i;
 	
