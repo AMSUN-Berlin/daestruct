@@ -37,7 +37,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <boost/heap/fibonacci_heap.hpp>
+#include <boost/heap/d_ary_heap.hpp>
 #include "lap.hpp"
 #include "prettyprint.hpp"
 
@@ -56,96 +56,116 @@ struct node_compare {
   
 };
 
-void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
+
+/* our priority queue, lent from boost with our custom comparator */
+typedef boost::heap::d_ary_heap<int,  boost::heap::arity<4>, boost::heap::mutable_<true>, boost::heap::compare<node_compare>> priority_queue;
+
+struct augmentation_data {
   /* is a column in "todo"? */
-  std::vector<bool> in_todo(assigncost.dimension, false);
+  std::vector<bool> in_todo;
   
   /* vector of 'ready' columns */
   std::vector<int> ready;
-  std::vector<bool> is_ready(assigncost.dimension, false);
+  std::vector<bool> is_ready;
 
   /* vector of previous rows for each column in the augmenting path */
-  std::vector<int> prev(assigncost.dimension, start);
+  std::vector<int> prev;
 
   /* scan vector */
   std::vector<int> scan;
   
   /* comparator implementation, based on distances */
-  std::vector<int> dist(assigncost.dimension);
+  std::vector<int> dist;
 
-  node_compare cmp(&dist);
+  /* priority queue */
+  std::vector<priority_queue::handle_type> handles;
+  node_compare cmp;
+  priority_queue pq;
 
-  /* our priority queue, lent from boost with our custom comparator */
-  typedef boost::heap::fibonacci_heap<int,  boost::heap::compare<node_compare>> priority_queue;
-  priority_queue pq(cmp);
-  std::vector<priority_queue::handle_type> handles(assigncost.dimension);
+  augmentation_data(int dim) : in_todo(dim), is_ready(dim), prev(dim), dist(dim), handles(dim), cmp(&dist), pq(cmp) {
+    pq.reserve(dim);
+  }
+
+  void reset(int start) {
+    std::fill(is_ready.begin(), is_ready.end(), false);
+    std::fill(in_todo.begin(), in_todo.end(), false);
+    std::fill(prev.begin(), prev.end(), start);
+
+    pq.clear();
+    ready.clear();
+    scan.clear();
+  }
+};
+
+void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
+  data.reset(start);
 
   auto start_row = assigncost.findRow(start);
 
   /* iterate twice to get correct order in queue */
   for (auto col = start_row.begin(); col != start_row.end() ; col++)
-    dist[col.index2()] = *col - v[col.index2()];
+    data.dist[col.index2()] = *col - v[col.index2()];
 
   for (auto col = start_row.begin(); col != start_row.end() ; col++) {
-    handles[col.index2()] = pq.push(col.index2());
-    in_todo[col.index2()] = true;
+    data.handles[col.index2()] = data.pq.push(col.index2());
+    data.in_todo[col.index2()] = true;
   }  
 
   int endofpath = -1;
   int min = 0;
   do {
-    if (scan.empty()) {
-      while (!pq.empty() && !in_todo[pq.top()])
-	pq.pop();
+    if (data.scan.empty()) {
+      while (!data.pq.empty() && !data.in_todo[data.pq.top()])
+	data.pq.pop();
 
-      min = dist[pq.top()];
-      while(!pq.empty() && dist[pq.top()] == min) {
-	const int j = pq.top();
-	if (in_todo[j]) {
+      min = data.dist[data.pq.top()];
+      while(!data.pq.empty() && data.dist[data.pq.top()] == min) {
+	const int j = data.pq.top();
+	if (data.in_todo[j]) {
 	  if (colsol[j] < 0) {
 	    endofpath = j;
 	    goto augment;
 	  }
-	  scan.push_back(j);
-	  in_todo[j] = false;
-	  pq.pop();
+	  data.scan.push_back(j);
+	  data.in_todo[j] = false;
+	  data.pq.pop();
 	}
       }
     }
 
-    const int j1 = scan.back();
-    scan.pop_back();
+    const int j1 = data.scan.back();
+    data.scan.pop_back();
     const int i = colsol[j1];
-    ready.push_back(j1);
-    is_ready[j1] = true;
+    data.ready.push_back(j1);
+    data.is_ready[j1] = true;
 
     auto row = assigncost.findRow(i);
     const int h = assigncost(i, j1) - v[j1];
     //sparse version of: forall j in TODO
     for (auto col = row.begin(); col != row.end() ; col++) {
       const int j = col.index2();
-      if (is_ready[j])
+      if (data.is_ready[j])
 	continue;
 
       const int c_red = *col - v[col.index2()] - h;
-      if (!in_todo[j] || min + c_red < dist[j]) {
-	dist[j] = min + c_red;
-	prev[j] = i;
+      if (!data.in_todo[j] || min + c_red < data.dist[j]) {
+	data.dist[j] = min + c_red;
+	data.prev[j] = i;
 	
-	if (dist[j] == min) {
+	if (data.dist[j] == min) {
 	  if (colsol[j] < 0) {
 	    endofpath = j;
 	    goto augment;
 	  } else {
-	    scan.push_back(j);
-	    in_todo[j] = false;	    
+	    data.scan.push_back(j);
+	    data.in_todo[j] = false;	    
 	  }
 	} else {
-	  if (!in_todo[j]) {
-	    handles[j] = pq.push(j);
-	    in_todo[j] = true;
+	  if (!data.in_todo[j]) {
+	    data.handles[j] = data.pq.push(j);
+	    data.in_todo[j] = true;
 	  } else {
-	    pq.update(handles[j]);
+	    data.pq.update(data.handles[j]);
 	  }
 	}
       }      
@@ -155,14 +175,14 @@ void augment(const daestruct::sigma_matrix& assigncost, std::vector<int>& v, con
 
  augment:
   /* update column prices */
-  for (int j : ready) {
-    v[j] = v[j] + dist[j] - min;
+  for (int j : data.ready) {
+    v[j] = v[j] + data.dist[j] - min;
   }
   
   /* augment solution */
   int i;
   do {
-    i = prev[endofpath]; 
+    i = data.prev[endofpath]; 
     colsol[endofpath] = i; 
     const int j1 = endofpath; 
     endofpath = rowsol[i]; 
@@ -217,8 +237,9 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
   */
 
   // AUGMENT SOLUTION for each free row.
+  augmentation_data data(assigncost.dimension);
   for (int f = 0; f < numfree; f++) {
-    augment(assigncost, v, free[f], rowsol, colsol);
+    augment(data, assigncost, v, free[f], rowsol, colsol);
   }
 
   // calculate optimal cost.
@@ -378,9 +399,10 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   std::cout << "Done LAP initialization. " << numfree << " unassigned rows remaining." << std::endl;
   
   // AUGMENT SOLUTION for each free row.
+  augmentation_data data(assigncost.dimension);
   for (f = 0; f < numfree; f++) {
     //std::cout << f << " / " << numfree << std::endl;
-    augment(assigncost, v, free[f], rowsol, colsol);
+    augment(data, assigncost, v, free[f], rowsol, colsol);
   }
 
   // calculate optimal cost.
