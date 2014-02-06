@@ -49,6 +49,14 @@ target_link_libraries(pendulumExample ${PROJECT_NAME})
 target_link_libraries(largeCircuitExample ${PROJECT_NAME})
 target_link_libraries(switchableCircuitExample ${PROJECT_NAME})
 
+target_link_libraries(${PROJECT_NAME}
+
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_TIMER_LIBRARY}
+  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+  )
+
 target_link_libraries(${PROJECT_NAME}_test
   ${PROJECT_NAME}
   ${Boost_FILESYSTEM_LIBRARY}

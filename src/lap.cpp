@@ -35,9 +35,11 @@
 
 */
 
+#include <cstring> //memset
 #include <iostream>
 #include <algorithm>
 #include <boost/heap/d_ary_heap.hpp>
+#include <boost/timer/timer.hpp>
 #include "lap.hpp"
 #include "prettyprint.hpp"
 
@@ -97,7 +99,7 @@ struct augmentation_data {
   }
 };
 
-void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
+inline void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost, std::vector<int>& v, const int start, std::vector<int>& rowsol, std::vector<int>& colsol) {
   data.reset(start);
 
   auto start_row = assigncost.findRow(start);
@@ -113,7 +115,9 @@ void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost,
 
   int endofpath = -1;
   int min = 0;
+  int iter = 0;
   do {
+    iter++;
     if (data.scan.empty()) {
       while (!data.pq.empty() && !data.in_todo[data.pq.top()])
 	data.pq.pop();
@@ -147,12 +151,12 @@ void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost,
       if (data.is_ready[j])
 	continue;
 
-      const int c_red = *col - v[col.index2()] - h;
+      const int c_red = *col - v[j] - h;
       if (!data.in_todo[j] || min + c_red < data.dist[j]) {
 	data.dist[j] = min + c_red;
 	data.prev[j] = i;
 	
-	if (data.dist[j] == min) {
+	if (0 == c_red) {
 	  if (colsol[j] < 0) {
 	    endofpath = j;
 	    goto augment;
@@ -172,10 +176,10 @@ void augment(augmentation_data& data, const daestruct::sigma_matrix& assigncost,
     }
 
   } while(true);
-
+  
  augment:
   /* update column prices */
-  for (int j : data.ready) {
+  for (const int j : data.ready) {
     v[j] = v[j] + data.dist[j] - min;
   }
   
@@ -203,6 +207,7 @@ std::ostream& operator<<(std::ostream& o, const solution& s) {
 
 solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _u, const std::vector<int>& _v,
 		   const std::vector<int>& _rowsol, const std::vector<int>& _colsol) {
+  boost::timer::auto_cpu_timer t;
   const long dim = assigncost.dimension;
   std::vector<int> u(dim),v(dim);
 
@@ -269,21 +274,18 @@ solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<
 
 solution lap(const daestruct::sigma_matrix& assigncost) {
   const long dim = assigncost.dimension;
-
+  boost::timer::auto_cpu_timer t;
+  
   std::vector<int> u(dim),v(dim),rowsol(dim),colsol(dim);
   
   int  i, imin, numfree = 0, prvnumfree, f, i0, k, *pred, *free;
   int  j, j1, j2=0, *matches;  
   int min=0, h, umin, usubmin, *d;
 
-  free = new int[dim];       // list of unassigned rows.
-  matches = new int[dim];    // counts how many times a row could be assigned.
+  free = new int[dim];      // list of unassigned rows.
+  matches = new int[dim](); // counts how many times a row could be assigned.
   d = new int[dim];         // 'cost-distance' in augmenting path calculation.
-  pred = new int[dim];       // row-predecessor of column in augmenting/alternating path.
-
-  // init how many times a row will be assigned in the column reduction.
-  for (i = 0; i < dim; i++)  
-    matches[i] = 0;
+  pred = new int[dim];      // row-predecessor of column in augmenting/alternating path.
 
   // COLUMN REDUCTION 
   for (j = dim-1; j >= 0; j--)    // reverse order gives better results.
@@ -396,12 +398,12 @@ solution lap(const daestruct::sigma_matrix& assigncost) {
   }
   while (loopcnt < 2);       // repeat once.
 
+  t.report();
   std::cout << "Done LAP initialization. " << numfree << " unassigned rows remaining." << std::endl;
   
   // AUGMENT SOLUTION for each free row.
   augmentation_data data(assigncost.dimension);
   for (f = 0; f < numfree; f++) {
-    //std::cout << f << " / " << numfree << std::endl;
     augment(data, assigncost, v, free[f], rowsol, colsol);
   }
 
