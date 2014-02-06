@@ -30,16 +30,21 @@
 
 namespace daestruct {
   using namespace boost::numeric::ublas;
-
+    
   class sigma_matrix {
 
     compressed_matrix<int> m;
     std::vector<int> minimum_row;
+    std::vector<compressed_matrix<int>::const_iterator1> rows;
 
   public:
-    long dimension;
+    int dimension;
 
-    sigma_matrix(long d) : m(d, d, 3*d), minimum_row(d), dimension(d) {}
+    sigma_matrix(int d) : m(d, d, 3*d), minimum_row(d), dimension(d) {
+      rows.reserve(d);
+      for (int r = 0; r < d; r++)
+	rows.push_back(m.find1(0, r, 0));
+    }
 
     compressed_matrix<int>::const_iterator1 rowBegin() const {
       return m.begin1();
@@ -50,7 +55,7 @@ namespace daestruct {
     }
 
     compressed_matrix<int>::const_iterator1 findRow(int i) const {
-      return m.find1(0, i, 0);
+      return rows[i];
     }
 
     int smallest_cost_row(int column) const {
