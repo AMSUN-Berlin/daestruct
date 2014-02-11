@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <daestruct.h>
 
+#include <timer.h>
 #include "circuit.h"
 
 int main(int argc, char** argv) {
@@ -41,30 +42,53 @@ int main(int argc, char** argv) {
     struct daestruct_result* result = daestruct_analyse(sigma);
 
     if (times > 0) {
-    struct switch_event se = switch_sub_circuit(&circuit, sw);
-    struct daestruct_changed* ch = daestruct_change_orig(sigma, result, se.diff);
+      struct daestruct_timer* model = daestruct_timer_new();
+      struct daestruct_timer* analyse = daestruct_timer_new();
+      daestruct_timer_stop(model);
+      daestruct_timer_stop(analyse);
+      
+      daestruct_timer_resume(model);
+      struct switch_event se = switch_sub_circuit(&circuit, sw);
+      struct daestruct_changed* ch = daestruct_change_orig(sigma, result, se.diff);
+      daestruct_timer_stop(model);
 
-    for (int k = 0; k < times; k++) {
-      printf("Switch %d out of %d\n", k+1, times);
-      daestruct_result_delete(result);
-      printf("Running analysis...\n");
-      result = daestruct_changed_analyse(ch);
-      printf("Reconciling...\n");
-      reconcile(&circuit, &se, ch);
-      daestruct_diff_delete(se.diff);
+      for (int k = 0; k < times; k++) {
+	daestruct_result_delete(result);
 
-      if (k < times - 1) { 
-	printf("Next event...\n");
-	se = switch_sub_circuit(&circuit, sw);
+	daestruct_timer_resume(analyse);
+	result = daestruct_changed_analyse(ch);
+	daestruct_timer_stop(analyse);
 
-	struct daestruct_changed* old = ch;
-	ch = daestruct_change(old, result, se.diff);
-	daestruct_changed_delete(old);
+	daestruct_timer_resume(model);
+	reconcile(&circuit, &se, ch);
+	daestruct_timer_stop(model);
+
+	daestruct_diff_delete(se.diff);
+
+	if (k < times - 1) { 
+	  daestruct_timer_resume(model);
+	  se = switch_sub_circuit(&circuit, sw);
+
+	  struct daestruct_changed* old = ch;
+	  ch = daestruct_change(old, result, se.diff);
+	  daestruct_changed_delete(old);
+	  daestruct_timer_stop(model);
+	}
       }
+      
+      printf("Analysis of %d events done.\n", times);
+      printf("Time spent in analysis:\n");
+      daestruct_timer_report(analyse);
+      printf("Time spent in modeling:\n");
+      daestruct_timer_report(model);
+      
+
+      daestruct_timer_delete(analyse);
+      daestruct_timer_delete(model);
+      daestruct_changed_delete(ch);
     }
-    
-    daestruct_changed_delete(ch);
-    }
+
+
     daestruct_result_delete(result);
     daestruct_input_delete(sigma);
 
