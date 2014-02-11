@@ -11,6 +11,7 @@ set(hdrs ${hdrs_dir}/daestruct.hpp)
 set(srcs ${srcs_dir}/analysis.cpp 
          ${srcs_dir}/lap.cpp
          ${srcs_dir}/daestruct.cpp
+         ${srcs_dir}/timer.cpp
          ${srcs_dir}/variable_analysis.cpp
          ${srcs_dir}/variable_structure.cpp
 )
