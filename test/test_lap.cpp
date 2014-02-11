@@ -64,6 +64,51 @@ namespace daestruct {
       BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,2,1}) );      
     }
 
+    void test_LAP_better_delta() {
+      sigma_matrix sigma ( 2 );
+
+      /*
+	    1  2  
+	   ------
+	A | 0  3 |
+	  |------|
+	B | 1  X |
+	   ------
+       */
+      sigma.insert(0, 0, 0);
+      sigma.insert(0, 1, 3);
+
+      sigma.insert(1, 0, 1);
+
+      solution assignment = lap(sigma);
+      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({1,0}) );
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({1,0}) );      
+      BOOST_CHECK_EQUAL( assignment.cost, 4);
+
+      sigma_matrix sigma2 ( 2 );
+
+      /*
+	    1  2  
+	   ------
+	A | 0  3 |
+	  |------|
+	B | 1  3 |
+	   ------
+       */
+      sigma2.insert(0, 0, 0);
+      sigma2.insert(0, 1, 3);
+
+      sigma2.insert(1, 0, 1);
+      sigma2.insert(1, 1, 3);
+
+      solution delta_assignment = delta_lap(sigma2, assignment.u, assignment.v, std::vector<int>({1,-1}), std::vector<int>({-1,0}));
+
+      BOOST_CHECK_EQUAL( delta_assignment.rowsol, std::vector<int>({0,1}) );
+      BOOST_CHECK_EQUAL( delta_assignment.colsol, std::vector<int>({0,1}) );      
+      BOOST_CHECK_EQUAL( delta_assignment.cost, 3);
+    }
+
     void test_LAP_delta() {
       sigma_matrix sigma ( 3 );
 

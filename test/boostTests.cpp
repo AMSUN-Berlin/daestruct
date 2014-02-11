@@ -35,6 +35,9 @@ init_unit_test_suite( int argc, char* argv[] ) {
 
   framework::master_test_suite().
         add( BOOST_TEST_CASE( &test_LAP_delta ) );
+
+  framework::master_test_suite().
+        add( BOOST_TEST_CASE( &test_LAP_better_delta ) );
   
   framework::master_test_suite().
         add( BOOST_TEST_CASE( &test_LAP_taxi_example ) );

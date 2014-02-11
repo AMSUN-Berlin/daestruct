@@ -27,6 +27,8 @@ namespace daestruct {
 
     void test_LAP_delta();
 
+    void test_LAP_better_delta();
+
     void test_LAP_taxi_example();
     
     void test_LAP_on_lifted_identity();
