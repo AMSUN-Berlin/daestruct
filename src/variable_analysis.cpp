@@ -34,10 +34,10 @@ using namespace boost::icl;
       solution assignment = delta_lap(sigma, dual_rows, dual_columns, row_assignment, col_assignment);
 
       AnalysisResult result;
-      result.row_assignment = std::move(assignment.rowsol);
-      result.col_assignment = std::move(assignment.colsol);
       result.c.resize(dimension);
       result.d.resize(dimension);
+      result.row_assignment = std::move(assignment.rowsol);
+      result.col_assignment = std::move(assignment.colsol);
 
       /* run fix-point algorithm */
       /*
@@ -58,10 +58,12 @@ using namespace boost::icl;
       std::cout << sigma << std::endl;
       */
       
-      std::cout << "Calculating smallest dual" << std::endl;
+      //std::cout << "Calculating smallest dual" << std::endl;
+	  
       solveByFixedPoint(result.row_assignment, sigma, result.c, result.d);
 
       //std::cout << "Done fixed-point" << std::endl;
+      //std::cout << "Canonical: c=" << result.c << " d=" << result.d << std::endl;
       return result;
     }
 
@@ -70,6 +72,7 @@ using namespace boost::icl;
       old_columns(prob.dimension - delta.deletedCols.size()),
       old_rows(prob.dimension - delta.deletedRows.size()),      
       dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
       sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
      
       applyDiff(prob.sigma, result, delta);
@@ -80,6 +83,7 @@ using namespace boost::icl;
       old_columns(prob.dimension - delta.deletedCols.size()),
       old_rows(prob.dimension - delta.deletedRows.size()),      
       dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
       sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
      
       applyDiff(prob.sigma, result, delta);
@@ -133,7 +137,9 @@ using namespace boost::icl;
 	for (const std::pair<int, int>& p : nrow.ex_vars) {
 	  const int orig_col = get<0>(p) ;
 	  const int col = orig_col + colOffsets(orig_col);
+	  const int min = sigma.smallest_cost_row(col);
 	  sigma.insert(old_rows+i, col, get<1>(p)); 
+	  row_changed[col] = min != sigma.smallest_cost_row(col);
 	}
 
 	for (const std::pair<int, int>& p : nrow.new_vars)

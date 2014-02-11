@@ -55,6 +55,7 @@ namespace daestruct {
       std::vector<int> col_assignment;
       std::vector<int> dual_columns;
       std::vector<int> dual_rows;
+      std::vector<bool> row_changed;
       boost::icl::interval_map<int, int> colOffsets;
       boost::icl::interval_map<int, int> rowOffsets;
 
