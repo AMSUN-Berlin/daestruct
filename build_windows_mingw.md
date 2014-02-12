@@ -8,8 +8,8 @@ Requirements:
 				* mingw32-gcc-g++
 			* Click Installation -> Apply Changes. Click Apply
 			
-			* Add MinGW bin folder to PATH, for example: C:\MinGW\bin
-			  See also http://www.mingw.org/wiki/Getting_Started under Environment Settings
+		* Add MinGW bin folder to PATH, for example: C:\MinGW\bin
+		  See also http://www.mingw.org/wiki/Getting_Started under Environment Settings
 
 
 	* Boost 1.55
