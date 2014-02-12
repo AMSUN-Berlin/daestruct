@@ -31,10 +31,6 @@ Requirements:
 		http://www.cmake.org/cmake/resources/software.html
 		When asked, selected add to PATH
 		
-	*LLVM
-		Download here: llvm.org/releases/download.html
-		When asked, selected add to PATH
-		
 		
 Building daestruct:
 
