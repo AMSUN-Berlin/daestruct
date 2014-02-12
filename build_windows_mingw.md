@@ -1,4 +1,5 @@
 Requirements:
+
 	* MinGW
 		* Download from http://www.mingw.org/
 		* Install MinGW, leave everything on default		
