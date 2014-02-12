@@ -37,6 +37,7 @@ Requirements:
 		
 		
 Building daestruct:
+
 	* Clone the git rep from: https://github.com/choeger/daestruct
 		
 	* Start a command prompt
