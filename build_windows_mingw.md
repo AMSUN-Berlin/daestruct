@@ -37,7 +37,9 @@ Building daestruct:
 	* Clone the git rep from: https://github.com/choeger/daestruct
 		
 	* Start a command prompt
-		* cd <path of daestruct>/build
+		* cd <path to daestruct>
+		* mkdir build
+		* cd build
 		* cmake .. -G "MinGW Makefiles"
 		* mingw32-make daestruct
 	
