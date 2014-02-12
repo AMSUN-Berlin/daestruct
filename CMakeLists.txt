@@ -37,7 +37,9 @@ include(fileList.cmake)
 #Build the library
 add_library(${PROJECT_NAME} SHARED ${srcs} ${hdrs})
 
-find_package(Boost COMPONENTS system filesystem timer unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS system filesystem timer chrono unit_test_framework REQUIRED)
+
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 add_executable(${PROJECT_NAME}_test ${test_sources})
 
@@ -50,10 +52,10 @@ target_link_libraries(largeCircuitExample ${PROJECT_NAME})
 target_link_libraries(switchableCircuitExample ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
-
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
   ${Boost_TIMER_LIBRARY}
+  ${Boost_CHRONO_LIBRARY}
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   )
 
@@ -62,6 +64,7 @@ target_link_libraries(${PROJECT_NAME}_test
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
   ${Boost_TIMER_LIBRARY}
+  ${Boost_CHRONO_LIBRARY}
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   )
       
