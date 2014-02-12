@@ -6,6 +6,10 @@ Requirements:
         * C++11 compiler
         
         * Boost http://www.boost.org/
+        
+        * cmake
+
+        * make
 
 Building:
 

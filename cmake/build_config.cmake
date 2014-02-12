@@ -5,7 +5,7 @@ set(source_dir src)
 set(test_dir test)
 
 set ( CMAKE_CXX_FLAGS "-std=c++11" )
-
+set ( CMAKE_C_FLAGS   "-std=c99"   )
 add_definitions(
   -march=native
   -Wall
