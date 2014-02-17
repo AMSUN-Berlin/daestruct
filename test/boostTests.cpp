@@ -16,7 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
+#ifdef __MINGW32__
+// Mingw doesn't define putenv() needed by Boost.Test
+extern int putenv(char*);
+#endif
+ 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/parameterized_test.hpp>
 

@@ -41,5 +41,5 @@ Building daestruct:
 		* mkdir build
 		* cd build
 		* cmake .. -G "MinGW Makefiles"
-		* mingw32-make daestruct
+		* mingw32-make
 	
