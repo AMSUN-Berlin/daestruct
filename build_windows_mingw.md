@@ -21,7 +21,7 @@ Requirements:
 		* Open a command prompt
 			* cd C:\boost\boost_1_55_0\
 			* bootstrap mingw
-			* b2 toolset=gcc  cxxflags="-std=c99"
+			* b2 toolset=gcc
 			  optional you can append -jN where N is the numbers of jobs to run, i.e. your cores
 		* Wait
 		
