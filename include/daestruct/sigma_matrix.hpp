@@ -71,12 +71,16 @@ namespace daestruct {
     }
 
     void insert(int i, int j, int x) {
-      const int* ptr = m.find_element(minimum_row[j],j);
+      int* ptr = m.find_element(minimum_row[j],j);
       
-      if (!ptr || *ptr > x)
+      if (!ptr) {
 	minimum_row[j] = i;
-
-      m.insert_element(i,j,x);
+	m.insert_element(i,j,x);
+      } else {
+	if (*ptr > x)
+	  minimum_row[j] = i;	  
+	*ptr = x;
+      }
     }
   
     template<class E, class T> inline static void nicePrint(std::basic_ostringstream<E, T>& s, int val) {
