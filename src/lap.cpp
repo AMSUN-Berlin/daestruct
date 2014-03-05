@@ -207,7 +207,7 @@ std::ostream& operator<<(std::ostream& o, const solution& s) {
 
 solution delta_lap(const daestruct::sigma_matrix& assigncost, const std::vector<int>& _u, const std::vector<int>& _v,
 		   const std::vector<int>& _rowsol, const std::vector<int>& _colsol) {
-  boost::timer::auto_cpu_timer t;
+  //boost::timer::auto_cpu_timer t;
   const long dim = assigncost.dimension;
   std::vector<int> u(dim),v(dim);
 
