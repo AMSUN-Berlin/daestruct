@@ -71,14 +71,16 @@ namespace daestruct {
     }
 
     void insert(int i, int j, int x) {
-      int* ptr = m.find_element(minimum_row[j],j);
+      const int* m_ptr = m.find_element(minimum_row[j],j);
       
-      if (!ptr) {
+      if (!m_ptr || *m_ptr > x) {
 	minimum_row[j] = i;
+      }
+      
+      int* ptr = m.find_element(i, j);
+      if (!ptr) {
 	m.insert_element(i,j,x);
       } else {
-	if (*ptr > x)
-	  minimum_row[j] = i;	  
 	*ptr = x;
       }
     }
