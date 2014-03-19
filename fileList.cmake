@@ -20,6 +20,7 @@ set(srcs ${srcs_dir}/analysis.cpp
 set(test_sources ${tests_dir}/boostTests.cpp 
   ${tests_dir}/pendulumAnalysis.cpp 
   ${tests_dir}/circuitAnalysis.cpp 
+  ${tests_dir}/compressionAnalysis.cpp
   ${tests_dir}/test_lap.cpp 
   )
 
