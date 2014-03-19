@@ -144,20 +144,20 @@ namespace daestruct {
 	      : 
 	      col_iter.index2() + inst.q; //public var
 	    ;
-
+	    std::cout << "Inserting at column " << j << " of " << inflated.dimension << std::endl;
 	    inflated.insert(i, j, *col_iter);
 
 	    /* get the required matching */
 	    const std::vector<int>& M = inst.c->M[k];
 
 	    /* inflate matching as well */
-	    const int i_m = M[row_iter.index1()];
+	    const int i_m = M.at(row_iter.index1());
 	    if (i_m > inst.c->q) {
-	      result.row_assignment[i] = i_m + col_offset;
-	      result.col_assignment[i_m + col_offset] = i;
+	      result.row_assignment.at(i) = i_m + col_offset;
+	      result.col_assignment.at(i_m + col_offset) = i;
 	    } else {
-	      result.row_assignment[i] = i_m + inst.q;
-	      result.col_assignment[i_m + inst.q] = i;
+	      result.row_assignment.at(i) = i_m + inst.q;
+	      result.col_assignment.at(i_m + inst.q) = i;
 	    }
 	  }
 
@@ -211,7 +211,7 @@ namespace daestruct {
 
 	  solution sol = lap(sigma);
 	  std::vector<int> M_i;
-	  M_i.reserve(p+1);
+	  M_i.resize(p+1);
 	  for (int i = 0; i < p+1; i++)
 	    M_i[i] = sol.rowsol[i];
 	  M.push_back(M_i);

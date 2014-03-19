@@ -74,7 +74,7 @@ namespace daestruct {
       const int* m_ptr = m.find_element(minimum_row[j],j);
       
       if (!m_ptr || *m_ptr > x) {
-	minimum_row[j] = i;
+	minimum_row.at(j) = i;
       }
       
       int* ptr = m.find_element(i, j);
