@@ -31,7 +31,7 @@ namespace daestruct {
 
     compressible subCircuit() {
       /* compressible sub-component with 2 public and 8 private vars */
-      compressible sc(2, 8);
+      compressible_builder sc(2, 8);
       
       /*
                  ____________________________P_______________________________    ____Q_____
@@ -78,8 +78,7 @@ namespace daestruct {
       sc.set_private_incidence(8, i2, 0);
       sc.set_private_incidence(8, iL, 0);	
 
-      sc.seal();
-      return sc;
+      return sc.build();
     }
 
     InputProblem inflated1() {

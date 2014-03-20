@@ -59,12 +59,33 @@ namespace daestruct {
     };
 
     /**
-     * A compressible sub-component S = ((P U Q) U X, D, d, {M_q})
+     * A sealed compressible sub-component S = ((P U Q) U X, D, d, {M_q})
      * Q = {0 .. q - 1}
      * P = {0 .. p - 1}
      * X = {0 .. p}
      */
     struct compressible {
+      int p;
+      int q;
+
+      sigma_matrix sigma; //represents D and d as well
+
+      typedef std::vector<std::vector<int>> assignment_permutations;
+
+      /* M_q in the form of row-assignments */
+      assignment_permutations M;
+
+      /* cost of the M_q assignments */
+      std::vector<int> cost;
+
+      compressible(int pub_v, int pri_v, const sigma_matrix& s);
+
+    };
+
+    /**
+     * A compressible sub-component builder
+     */
+    struct compressible_builder {
       int p;
       int q;
 
@@ -78,12 +99,12 @@ namespace daestruct {
       /* cost of the M_q assignments */
       std::vector<int> cost;
 
-      compressible(int pub_v, int pri_v) : p(pri_v), q(pub_v), sigma(p+q) {}
+      compressible_builder(int pub_v, int pri_v) : p(pri_v), q(pub_v), sigma(p+q) {}
 
       /**
-       * Seal this sub-component (i.e. afterwards set_*_incidence is a no-op)
+       * Build this sub-component (i.e. afterwards set_*_incidence is a no-op)
        */
-      void seal();
+      compressible build();
 
       /**
        * Set the incidence in this sub component

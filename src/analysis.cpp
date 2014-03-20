@@ -196,47 +196,56 @@ namespace daestruct {
       return inflated.component_cols[k] + var;
     }
     
+    compressible::compressible(int pub_v, int pri_v, const sigma_matrix& s) : p(pri_v), q(pub_v), sigma(p+q) {
+      // copy only the interesting parts, keeps memory requirements lower and (theoretically) saves time
+      for (auto row_iter = s.rowBegin(); row_iter != s.rowEnd() && row_iter.index1() < p+1; row_iter++)
+	for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
+	  sigma.insert(row_iter.index1(), col_iter.index2(), *col_iter);	
+    }
+
     /**
      * Seal this sub-component (i.e. afterwards set_incidence is a no-op)
      */
-    void compressible::seal() {
-      if (M.size() == 0) {
-	for (int j = 0; j < q; j++) {
-	  /* prepare identity matrix for the remaining rows and public vars */
-	  int s_row = p+1;
-	  for (int pub_j = 0; pub_j < q; pub_j++) {
-	    if(pub_j != j) {
-	      sigma.insert(s_row++, pub_j, 0);	     
-	    }
-	  }
+    compressible compressible_builder::build() {
+      compressible compr(q, p, sigma);
 
-	  solution sol = lap(sigma);
-	  std::vector<int> M_i;
-	  M_i.resize(p+1);
-	  for (int i = 0; i < p+1; i++)
-	    M_i[i] = sol.rowsol[i];
-	  M.push_back(M_i);
-	  cost.push_back(sol.cost);
-
-	  /* reset the identity matrix for the next run */
-	  s_row = p+1;
-	  for (int pub_j = 0; pub_j < q; pub_j++) {
-	    if(pub_j != j) {
-	      sigma.insert(s_row++, pub_j, BIG);	     
-	    }
+      for (int j = 0; j < q; j++) {
+	/* prepare identity matrix for the remaining rows and public vars */
+	int s_row = p+1;
+	for (int pub_j = 0; pub_j < q; pub_j++) {
+	  if(pub_j != j) {
+	    sigma.insert(s_row++, pub_j, 0);	     
 	  }
-	}	
-      }
+	}
+
+	solution sol = lap(sigma);
+	std::vector<int> M_i;
+	M_i.resize(p+1);
+	for (int i = 0; i < p+1; i++)
+	  M_i[i] = sol.rowsol[i];
+	compr.M.push_back(M_i);
+	compr.cost.push_back(sol.cost);
+
+	/* reset the identity matrix for the next run */
+	s_row = p+1;
+	for (int pub_j = 0; pub_j < q; pub_j++) {
+	  if(pub_j != j) {
+	    sigma.insert(s_row++, pub_j, BIG);	     
+	  }
+	}
+      }	
+
+      return compr;
     }
 
-    void compressible::set_private_incidence(int i, int j, int val) {
+    void compressible_builder::set_private_incidence(int i, int j, int val) {
       //TODO: exception if j > p || i > p+1
       if (M.size() == 0) {
 	sigma.insert(i, j + q, val);
       }
     }
 
-    void compressible::set_public_incidence(int i, int j, int val) {
+    void compressible_builder::set_public_incidence(int i, int j, int val) {
       //TODO: exception if j > q || i > p+1
       if (M.size() == 0) {
 	sigma.insert(i, j, val);
@@ -244,7 +253,6 @@ namespace daestruct {
     }
 
     void compressible_instance::insert_incidence(sigma_matrix& sigma) const {
-      c->seal();
       for (int j = 0; j < c->q; j++)
 	sigma.insert(s, j + q, c->cost[j]);
     }
