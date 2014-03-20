@@ -81,15 +81,23 @@ namespace daestruct {
       compressible(int pub_v, int pri_v) : p(pri_v), q(pub_v), sigma(p+q) {}
 
       /**
-       * Seal this sub-component (i.e. afterwards set_incidence is a no-op)
+       * Seal this sub-component (i.e. afterwards set_*_incidence is a no-op)
        */
       void seal();
 
       /**
        * Set the incidence in this sub component
+       * j is interpreted as a private variable
        * Note: i < p + 1 !
        */
-      void set_incidence(int i, int j, int val);
+      void set_private_incidence(int i, int j, int val);
+
+      /**
+       * Set the incidence in this sub component
+       * j is interpreted as a private variable
+       * Note: i < p + 1 !
+       */
+      void set_public_incidence(int i, int j, int val);
     };
 
     struct compressible_instance {

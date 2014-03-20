@@ -229,11 +229,15 @@ namespace daestruct {
       }
     }
 
-    /**
-     * Set the incidence in this sub component
-     * Note: i < p + 1 !
-     */
-    void compressible::set_incidence(int i, int j, int val) {
+    void compressible::set_private_incidence(int i, int j, int val) {
+      //TODO: exception if j > p || i > p+1
+      if (M.size() == 0) {
+	sigma.insert(i, j + q, val);
+      }
+    }
+
+    void compressible::set_public_incidence(int i, int j, int val) {
+      //TODO: exception if j > q || i > p+1
       if (M.size() == 0) {
 	sigma.insert(i, j, val);
       }

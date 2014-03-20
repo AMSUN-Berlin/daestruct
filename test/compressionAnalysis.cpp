@@ -36,47 +36,47 @@ namespace daestruct {
       /*
                  ____________________________P_______________________________    ____Q_____
                 |                                                            |  |          | */
-      const int u1 = 2, i1 = 3, u2 = 4, i2 = 5, uC = 6, iC = 7, uL = 8, iL = 9, u = 0, i = 1;
+      const int u1 = 0, i1 = 1, u2 = 2, i2 = 3, uC = 4, iC = 5, uL = 6, iL = 7, u = 0, i = 1;
 
       //u1=R[1]*i1;
-      sc.set_incidence(0, u1, 0);
-      sc.set_incidence(0, i1, 0);
+      sc.set_private_incidence(0, u1, 0);
+      sc.set_private_incidence(0, i1, 0);
 
       //u2=R[2]*i2;
-      sc.set_incidence(1, u2, 0);
-      sc.set_incidence(1, i2, 0);
+      sc.set_private_incidence(1, u2, 0);
+      sc.set_private_incidence(1, i2, 0);
 
       //uL=L*der(iL);
-      sc.set_incidence(2, uL, 0);
-      sc.set_incidence(2, iL, -1);
+      sc.set_private_incidence(2, uL, 0);
+      sc.set_private_incidence(2, iL, -1);
 
       //iC=C*der(uC);
-      sc.set_incidence(3, uC, -1);
-      sc.set_incidence(3, iC, 0);
+      sc.set_private_incidence(3, uC, -1);
+      sc.set_private_incidence(3, iC, 0);
 
       //u=u1+uL;
-      sc.set_incidence(4, u, 0);
-      sc.set_incidence(4, u1, 0);
-      sc.set_incidence(4, uL, 0);
+      sc.set_public_incidence(4, u, 0);
+      sc.set_private_incidence(4, u1, 0);
+      sc.set_private_incidence(4, uL, 0);
 
       //uC=u1+u2;
-      sc.set_incidence(5, uC, 0);
-      sc.set_incidence(5, u1, 0);
-      sc.set_incidence(5, u2, 0);
+      sc.set_private_incidence(5, uC, 0);
+      sc.set_private_incidence(5, u1, 0);
+      sc.set_private_incidence(5, u2, 0);
 
       //uL=u2;
-      sc.set_incidence(6, uL, 0);
-      sc.set_incidence(6, u2, 0);
+      sc.set_private_incidence(6, uL, 0);
+      sc.set_private_incidence(6, u2, 0);
 
       //i0=i1+iC;
-      sc.set_incidence(7, i, 0);
-      sc.set_incidence(7, i1, 0);
-      sc.set_incidence(7, iC, 0);
+      sc.set_public_incidence(7, i, 0);
+      sc.set_private_incidence(7, i1, 0);
+      sc.set_private_incidence(7, iC, 0);
 
       //i1=i2+iL;
-      sc.set_incidence(8, i1, 0);
-      sc.set_incidence(8, i2, 0);
-      sc.set_incidence(8, iL, 0);	
+      sc.set_private_incidence(8, i1, 0);
+      sc.set_private_incidence(8, i2, 0);
+      sc.set_private_incidence(8, iL, 0);	
 
       sc.seal();
       return sc;
