@@ -135,16 +135,15 @@ namespace daestruct {
       for (const compressible_instance& inst : c.instances) {
 	/* which public variable does this component solve ? */
 	const int k = comp_assignment.rowsol[inst.s] - inst.q;
-	for (auto row_iter = inst.c->sigma.rowBegin(); row_iter != inst.c->sigma.rowEnd(); row_iter++)
+	for (auto row_iter = inst.c->sigma.rowBegin(); row_iter.index1() < inst.c->p + 1; row_iter++)
 	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
 	    const int i = row_iter.index1() + row_offset;
 	    const int j = 	    
 	      (col_iter.index2() > inst.c->q) ?  // private variable
-	      col_iter.index2() + col_offset
+	      col_iter.index2() + col_offset - inst.c->q
 	      : 
 	      col_iter.index2() + inst.q; //public var
-	    ;
-	    std::cout << "Inserting at column " << j << " of " << inflated.dimension << std::endl;
+	    ;	    
 	    inflated.insert(i, j, *col_iter);
 
 	    /* get the required matching */
@@ -152,9 +151,9 @@ namespace daestruct {
 
 	    /* inflate matching as well */
 	    const int i_m = M.at(row_iter.index1());
-	    if (i_m > inst.c->q) {
-	      result.row_assignment.at(i) = i_m + col_offset;
-	      result.col_assignment.at(i_m + col_offset) = i;
+	    if (i_m >= inst.c->q) {
+	      result.row_assignment.at(i) = i_m + col_offset - inst.c->q;
+	      result.col_assignment.at(i_m + col_offset - inst.c->q) = i;
 	    } else {
 	      result.row_assignment.at(i) = i_m + inst.q;
 	      result.col_assignment.at(i_m + inst.q) = i;
@@ -202,12 +201,14 @@ namespace daestruct {
      */
     void compressible::seal() {
       if (M.size() == 0) {
-	for (int j = p; j < p+q; j++) {
+	for (int j = 0; j < q; j++) {
 	  /* prepare identity matrix for the remaining rows and public vars */
-	  for (int i = p+1; i < p+q; i++)
-	    for (int j2 = p; j2 < p+q; j2++)
-	      if (j2 != j)
-		sigma.insert(i,j2,0);
+	  int s_row = p+1;
+	  for (int pub_j = 0; pub_j < q; pub_j++) {
+	    if(pub_j != j) {
+	      sigma.insert(s_row++, pub_j, 0);	     
+	    }
+	  }
 
 	  solution sol = lap(sigma);
 	  std::vector<int> M_i;
@@ -218,10 +219,12 @@ namespace daestruct {
 	  cost.push_back(sol.cost);
 
 	  /* reset the identity matrix for the next run */
-	  for (int i = p+1; i < p+q; i++)
-	    for (int j2 = 0; j2 < q; j2++)
-	      if (j2 != j)
-		sigma.insert(i,j2,BIG);
+	  s_row = p+1;
+	  for (int pub_j = 0; pub_j < q; pub_j++) {
+	    if(pub_j != j) {
+	      sigma.insert(s_row++, pub_j, BIG);	     
+	    }
+	  }
 	}	
       }
     }

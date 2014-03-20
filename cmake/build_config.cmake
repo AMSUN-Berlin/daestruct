@@ -9,7 +9,7 @@ set ( CMAKE_C_FLAGS   "-std=c99"   )
 add_definitions(
   -march=native
   -Wall
-  -O3
+  #-O3
   -g
 )
 

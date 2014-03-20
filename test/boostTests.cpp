@@ -27,6 +27,7 @@ extern int putenv(char*);
 
 #include "pendulumAnalysis.hpp"
 #include "circuitAnalysis.hpp"
+#include "compressionAnalysis.hpp"
 #include "test_lap.hpp"
 
 using namespace boost::unit_test;
@@ -58,6 +59,10 @@ init_unit_test_suite( int argc, char* argv[] ) {
 
   framework::master_test_suite().
         add( BOOST_TEST_CASE( &analyzeCircuit1 ) );
+
+
+  framework::master_test_suite().
+        add( BOOST_TEST_CASE( &analyzeCompressedCircuit1 ) );
   
   return 0;
 }

@@ -36,7 +36,7 @@ namespace daestruct {
       /*
                  ____________________________P_______________________________    ____Q_____
                 |                                                            |  |          | */
-      const int u1 = 0, i1 = 1, u2 = 2, i2 = 3, uL = 4, iL = 5, uC = 6, iC = 7, u = 8, i = 9;
+      const int u1 = 2, i1 = 3, u2 = 4, i2 = 5, uC = 6, iC = 7, uL = 8, iL = 9, u = 0, i = 1;
 
       //u1=R[1]*i1;
       sc.set_incidence(0, u1, 0);
@@ -82,6 +82,58 @@ namespace daestruct {
       return sc;
     }
 
+    InputProblem inflated1() {
+      InputProblem infl(10);
+            /*
+                 ____________________________P_______________________________    ____Q_____
+                |                                                            |  |          | */
+      const int u1 = 2, i1 = 3, u2 = 4, i2 = 5, uC = 6, iC = 7, uL = 8, iL = 9, u = 0, i = 1;
+
+      infl.sigma.insert(0, u, 0);
+
+      //u1=R[1]*i1;
+      infl.sigma.insert(1, u1, 0);
+      infl.sigma.insert(1, i1, 0);
+
+      //u2=R[2]*i2;
+      infl.sigma.insert(2, u2, 0);
+      infl.sigma.insert(2, i2, 0);
+
+      //uL=L*der(iL);
+      infl.sigma.insert(3, uL, 0);
+      infl.sigma.insert(3, iL, -1);
+
+      //iC=C*der(uC);
+      infl.sigma.insert(4, uC, -1);
+      infl.sigma.insert(4, iC, 0);
+
+      //u=u1+uL;
+      infl.sigma.insert(5, u, 0);
+      infl.sigma.insert(5, u1, 0);
+      infl.sigma.insert(5, uL, 0);
+
+      //uC=u1+u2;
+      infl.sigma.insert(6, uC, 0);
+      infl.sigma.insert(6, u1, 0);
+      infl.sigma.insert(6, u2, 0);
+
+      //uL=u2;
+      infl.sigma.insert(7, uL, 0);
+      infl.sigma.insert(7, u2, 0);
+
+      //i0=i1+iC;
+      infl.sigma.insert(8, i, 0);
+      infl.sigma.insert(8, i1, 0);
+      infl.sigma.insert(8, iC, 0);
+
+      //i1=i2+iL;
+      infl.sigma.insert(9, i1, 0);
+      infl.sigma.insert(9, i2, 0);
+      infl.sigma.insert(9, iL, 0);
+      
+      return infl;
+    }
+
     void analyzeCompressedCircuit1() {
       compressible *sc = new compressible(subCircuit());
       InputProblem compressed(2);
@@ -96,9 +148,11 @@ namespace daestruct {
       
       AnalysisResult result = compressed.pryceCompressed(comp);
 
-      BOOST_CHECK_EQUAL( result.d, std::vector<int>({1, 1, 1, 1, 1, 0, 1, 1, 0, 1}) );
+      AnalysisResult expected = inflated1().pryceAlgorithm();
+
+      BOOST_CHECK_EQUAL( result.d, expected.d );
       
-      BOOST_CHECK_EQUAL( result.c, std::vector<int>({1, 1, 1, 0, 0, 1, 1, 1, 0, 1}) );
+      BOOST_CHECK_EQUAL( result.c, expected.c );
 
       delete sc;
     }
