@@ -47,7 +47,7 @@ extern "C" {
 
   /**
    * actually run the structural analysis
-   * the returned pointer must be deleted with daestruct_result_delete
+   * the returned pointer must be deleted with daestruct_result_delete()
    */
   struct daestruct_result* daestruct_analyse(struct daestruct_input* problem);
 
@@ -65,6 +65,76 @@ extern "C" {
    * delete the given result description
    */
   void daestruct_result_delete(struct daestruct_result* result);  
+
+  struct daestruct_component_builder;
+
+  /**
+   * allocate a new compressed-component builder
+   * the returned pointer must be deleted with daestruct_component_builder_delete()
+   */
+  struct daestruct_component_builder* daestruct_component_builder_create(int publics, int privates);
+
+  /**
+   * delete the given component builder
+   */
+  void daestruct_component_builder_delete(struct daestruct_component_builder* bldr);
+  
+  /**
+   * Set the degree of derivation of the n-th public variable
+   */
+  void daestruct_component_builder_public_set(struct daestruct_component_builder* bldr, int equation, int public_var, int degree);
+  
+  /**
+   * Set the degree of derivation of the n-th private variable
+   */
+  void daestruct_component_builder_private_set(struct daestruct_component_builder* bldr, int equation, int public_var, int degree);
+
+  struct daestruct_component;  
+
+  /**
+   * build a compression component
+   * the resulting pointer must be deleted with daestruct_component_delete()
+   */
+  struct daestruct_component* daestruct_component_build(struct daestruct_component_builder* builder);
+
+  /**
+   * delete the given component
+   */
+  void daestruct_component_delete(struct daestruct_component* cmp);
+  
+  struct daestruct_component_list;
+  
+  /**
+   * Allocates a new list of component instances
+   */ 
+  struct daestruct_component_list* daestruct_component_list_empty();
+
+  struct daestruct_component_instance;
+
+  /**
+   * Instantiate a component at the given offset using the given surrogat equation
+   * returns a handle to the list-item, the returned pointer will be deleted with the list automatically
+   */
+  struct daestruct_component_instance* daestruct_component_instantiate(struct daestruct_component_list* list, 
+								       struct daestruct_component* cmp, 
+								       int public_var_offset, 
+								       int surrogat_equation);
+  /**
+   * insert the public part (i.e. public variables and surrogat row) of an instantiated component
+   * into an input problem
+   */
+  void daestruct_set_public_parts(struct daestruct_input* problem, struct daestruct_component_instance* instance);
+
+  /**
+   * Delete a list of instances
+   */
+  void daestruct_component_list_delete(struct daestruct_component_list* list);
+
+  /**
+   * run the structural analysis using a list of compressed components
+   * the returned pointer must be deleted with daestruct_result_delete()
+   */
+  struct daestruct_result* daestruct_analyse_compressed(struct daestruct_input* problem, struct daestruct_component_list* list);
 
 #ifdef __cplusplus
 }

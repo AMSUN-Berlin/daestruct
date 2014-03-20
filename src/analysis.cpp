@@ -240,16 +240,12 @@ namespace daestruct {
 
     void compressible_builder::set_private_incidence(int i, int j, int val) {
       //TODO: exception if j > p || i > p+1
-      if (M.size() == 0) {
-	sigma.insert(i, j + q, val);
-      }
+      sigma.insert(i, j + q, val);
     }
 
     void compressible_builder::set_public_incidence(int i, int j, int val) {
       //TODO: exception if j > q || i > p+1
-      if (M.size() == 0) {
-	sigma.insert(i, j, val);
-      }
+      sigma.insert(i, j, val);
     }
 
     void compressible_instance::insert_incidence(sigma_matrix& sigma) const {

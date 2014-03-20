@@ -93,12 +93,6 @@ namespace daestruct {
       //every row from p+1 .. p+q will be full in the end
       sigma_matrix sigma; //represents D and d as well
 
-      /* M_q in the form of row-assignments */
-      std::vector<std::vector<int>> M;
-
-      /* cost of the M_q assignments */
-      std::vector<int> cost;
-
       compressible_builder(int pub_v, int pri_v) : p(pri_v), q(pub_v), sigma(p+q) {}
 
       /**
