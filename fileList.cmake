@@ -28,5 +28,7 @@ set(test_sources ${tests_dir}/boostTests.cpp
 set(pendulum_example_sources ${examples_dir}/pendulum.c)
 set(largeCircuit_example_sources ${examples_dir}/largeCircuit.c)
 set(switchableCircuit_example_sources ${examples_dir}/largeSwitchCircuit.c)
+set(largeCompressedCircuit_example_sources ${examples_dir}/largeCompressedCircuit.c ${examples_dir}/compressed_circuit.c)
+
 
 

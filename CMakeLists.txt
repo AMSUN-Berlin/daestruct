@@ -45,10 +45,12 @@ add_executable(${PROJECT_NAME}_test ${test_sources})
 
 add_executable(pendulumExample ${pendulum_example_sources})
 add_executable(largeCircuitExample ${largeCircuit_example_sources})
+add_executable(largeCompressedCircuitExample ${largeCompressedCircuit_example_sources})
 add_executable(switchableCircuitExample ${switchableCircuit_example_sources})
 
 target_link_libraries(pendulumExample ${PROJECT_NAME})
 target_link_libraries(largeCircuitExample ${PROJECT_NAME})
+target_link_libraries(largeCompressedCircuitExample ${PROJECT_NAME})
 target_link_libraries(switchableCircuitExample ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
