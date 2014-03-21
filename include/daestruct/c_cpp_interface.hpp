@@ -32,4 +32,12 @@ struct daestruct_diff : public StructChange {};
 
 struct daestruct_changed : public ChangedProblem {};
 
+struct daestruct_component_builder : public compressible_builder {};
+
+struct daestruct_component : public compressible {}; 
+
+struct daestruct_component_list : public compression {};
+
+struct daestruct_component_instance : public compressible_instance {};
+
 #endif

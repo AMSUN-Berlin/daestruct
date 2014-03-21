@@ -87,7 +87,7 @@ extern "C" {
   /**
    * Set the degree of derivation of the n-th private variable
    */
-  void daestruct_component_builder_private_set(struct daestruct_component_builder* bldr, int equation, int public_var, int degree);
+  void daestruct_component_builder_private_set(struct daestruct_component_builder* bldr, int equation, int private_var, int degree);
 
   struct daestruct_component;  
 

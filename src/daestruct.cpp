@@ -54,4 +54,55 @@ extern "C" {
   void daestruct_result_delete(struct daestruct_result* result) {
     delete result;
   }
+
+  struct daestruct_component_builder* daestruct_component_builder_create(int publics, int privates) {
+    return static_cast<struct daestruct_component_builder*>
+      (new compressible_builder(publics, privates));
+  }
+
+  void daestruct_component_builder_delete(struct daestruct_component_builder* bldr) {
+    delete bldr;
+  }
+  
+  void daestruct_component_builder_public_set(struct daestruct_component_builder* bldr, int equation, int public_var, int degree) {
+    bldr->set_public_incidence(equation, public_var, -degree);
+  }
+  
+  void daestruct_component_builder_private_set(struct daestruct_component_builder* bldr, int equation, int private_var, int degree) {
+    bldr->set_private_incidence(equation, private_var, -degree);    
+  }
+
+  struct daestruct_component* daestruct_component_build(struct daestruct_component_builder* builder) {
+    return static_cast<struct daestruct_component*>(new compressible(builder->build()));
+  }
+
+  void daestruct_component_delete(struct daestruct_component* cmp) {
+    delete cmp;
+  }
+  
+  struct daestruct_component_list* daestruct_component_list_empty() {
+    return static_cast< struct daestruct_component_list*>(new compression());
+  }
+
+  struct daestruct_component_instance* daestruct_component_instantiate(struct daestruct_component_list* list, 
+								       struct daestruct_component* cmp, 
+								       int public_var_offset, 
+								       int surrogat_equation) {
+    list->instances.push_back(compressible_instance(public_var_offset, surrogat_equation, cmp));
+    return static_cast<struct daestruct_component_instance*>(&list->instances.back());
+  }
+
+  void daestruct_set_public_parts(struct daestruct_input* problem, 
+				  struct daestruct_component_instance* instance) {
+    instance->insert_incidence(problem->sigma);
+  }
+
+  void daestruct_component_list_delete(struct daestruct_component_list* list) {
+    delete list;
+  }
+
+  struct daestruct_result* daestruct_analyse_compressed(struct daestruct_input* problem, struct daestruct_component_list* list) {
+    return static_cast<struct daestruct_result*>(new AnalysisResult(problem->pryceCompressed(*list)));
+  }
+
 }
