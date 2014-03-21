@@ -18,6 +18,7 @@
  */
 
 #include <daestruct/analysis.hpp>
+#include <boost/timer/timer.hpp>
 
 #include <vector>
 
@@ -105,16 +106,16 @@ namespace daestruct {
 
     sigma_matrix copy_defrag_noninflated(const sigma_matrix& compressed, const solution& comp_assignment,
 					 AnalysisResult& result, const compression& c) {
-
       sigma_matrix inflated ( result.row_assignment.size() );
       int si = 0;
       
       for (auto row_iter = compressed.rowBegin(); row_iter != compressed.rowEnd(); row_iter++) {
 	const int i = row_iter.index1();
-	if (i != c.instances[si].s) {
+
+	if (si >= c.instances.size() || i != c.instances[si].s) {
 	  /* copy row */
 	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
-	    inflated.insert(si, col_iter.index2(), *col_iter);
+	    inflated.insert(i - si, col_iter.index2(), *col_iter);
 	  
 	  /* copy assignment */
 	  result.row_assignment[i - si] = comp_assignment.rowsol[i];
@@ -124,10 +125,13 @@ namespace daestruct {
 	}
       }
 
+      //std::cout << inflated << std::endl;
       return inflated;
     }
 
     void inflate(sigma_matrix& inflated, const solution& comp_assignment, AnalysisResult& result, const compression& c) {
+      //std::cout << "Inflating..." << std::endl;
+      //boost::timer::auto_cpu_timer t;
       int row_offset = comp_assignment.rowsol.size() - c.instances.size();
       int col_offset = comp_assignment.colsol.size();
 
@@ -139,7 +143,7 @@ namespace daestruct {
 	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
 	    const int i = row_iter.index1() + row_offset;
 	    const int j = 	    
-	      (col_iter.index2() > inst.c->q) ?  // private variable
+	      (col_iter.index2() >= inst.c->q) ?  // private variable
 	      col_iter.index2() + col_offset - inst.c->q
 	      : 
 	      col_iter.index2() + inst.q; //public var
@@ -182,6 +186,13 @@ namespace daestruct {
 
       result.c.resize(dimension + c.variables());
       result.d.resize(dimension + c.variables());
+
+      int cost = 0;
+      for (int i = 0; i < result.row_assignment.size(); i++)
+	cost += inflated(i, result.row_assignment[i]);
+
+      int sizep = (100 * dimension) / inflated.dimension ;
+      std::cout << "Compressed (" << sizep << "%) LAP solved and inflated. Value is: " << cost << std::endl;
       
       solveByFixedPoint(result.row_assignment, inflated, result.c, result.d);
       
