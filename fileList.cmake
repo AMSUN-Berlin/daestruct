@@ -31,4 +31,12 @@ set(switchableCircuit_example_sources ${examples_dir}/largeSwitchCircuit.c)
 set(largeCompressedCircuit_example_sources ${examples_dir}/largeCompressedCircuit.c ${examples_dir}/compressed_circuit.c)
 
 
-
+#Public API
+set(${PROJECT_NAME}_headers ${hdrs_dir}/daestruct.h
+			    ${hdrs_dir}/daestruct.hpp
+                            ${hdrs_dir}/daestruct/analysis.hpp
+			    ${hdrs_dir}/daestruct/sigma_matrix.hpp
+			    ${hdrs_dir}/daestruct/timer.h
+			    ${hdrs_dir}/daestruct/variable_analysis.hpp
+			    ${hdrs_dir}/daestruct/variable_structure.h
+			    )

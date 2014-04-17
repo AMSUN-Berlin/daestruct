@@ -70,4 +70,18 @@ target_link_libraries(${PROJECT_NAME}_test
   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   )
       
+set_property(TARGET ${PROJECT_NAME} PROPERTY PUBLIC_HEADER ${${PROJECT_NAME}_headers})
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+foreach(header ${${PROJECT_NAME}_headers})
+  get_filename_component(header_dir ${header} PATH)
+  file(RELATIVE_PATH rel_header_dir ${${PROJECT_NAME}_include_dir} ${header_dir})
+  install(FILES ${header} DESTINATION include/${rel_header_dir})
+endforeach(header)
+
 
