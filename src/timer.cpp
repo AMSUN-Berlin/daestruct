@@ -17,7 +17,7 @@
  * along with daestruct. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "timer.h"
+#include "daestruct/timer.h"
 #include <boost/timer/timer.hpp>
 
 extern "C" {

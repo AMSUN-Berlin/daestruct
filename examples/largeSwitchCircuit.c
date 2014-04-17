@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <daestruct.h>
 
-#include <timer.h>
+#include <daestruct/timer.h>
 #include "circuit.h"
 
 int main(int argc, char** argv) {
