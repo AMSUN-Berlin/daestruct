@@ -72,8 +72,8 @@ using namespace boost::icl;
       old_columns(prob.dimension - delta.deletedCols.size()),
       old_rows(prob.dimension - delta.deletedRows.size()),      
       dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
-      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
-      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
+      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
      
       applyDiff(prob.sigma, result, delta);
     }
@@ -83,8 +83,8 @@ using namespace boost::icl;
       old_columns(prob.dimension - delta.deletedCols.size()),
       old_rows(prob.dimension - delta.deletedRows.size()),      
       dimension(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
-      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
-      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
+      sigma(prob.dimension - delta.deletedRows.size() + delta.newRows.size()),
+      row_changed(prob.dimension - delta.deletedRows.size() + delta.newRows.size()) {
      
       applyDiff(prob.sigma, result, delta);
     }
