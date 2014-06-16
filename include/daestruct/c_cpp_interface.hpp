@@ -19,10 +19,15 @@
 #ifndef DAE_C_CPP_INTERFACE_HPP
 #define DAE_C_CPP_INTERFACE_HPP
 
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+
 #include <daestruct/analysis.hpp>
 #include <daestruct/variable_analysis.hpp>
 
 using namespace daestruct::analysis;
+using namespace boost::numeric::ublas;
+
+struct daestruct_input_builder : public coordinate_matrix<int> {};
 
 struct daestruct_input : public InputProblem {};
 

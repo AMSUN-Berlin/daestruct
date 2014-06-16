@@ -132,10 +132,12 @@ namespace daestruct {
     };
 
     struct InputProblem {
-      long dimension;
+      int dimension;
       sigma_matrix sigma;
   
-      InputProblem(long d) : dimension(d), sigma(d) {}
+      InputProblem(const coordinate_matrix<int>& builder) : dimension(builder.size1()), sigma(builder) {}
+
+      InputProblem(int d) : dimension(d), sigma(d) {}
 
       AnalysisResult pryceAlgorithm() const;
     

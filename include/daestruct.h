@@ -22,9 +22,33 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+  /* faster data structure for building up an input problem */
+  struct daestruct_input_builder;
+
+  /**
+   * set the maximum derivative of @variable in @equation in the given input problem
+   */
+  void daestruct_input_builder_append(struct daestruct_input_builder* problem, int variable, int equation, int derivative);
+ 
+  /**
+   * create an input problem description builder for the structural analysis
+   * the returned pointer must be deleted with daestruct_input_builder_delete
+   */
+  struct daestruct_input_builder* daestruct_input_builder_create(int dimension);
+
+  /**
+   * delete a daestruct input problem builder
+   */
+  void daestruct_input_builder_delete(struct daestruct_input_builder* problem);
   
   /* daestruct input description */
   struct daestruct_input;    
+ 
+ /**
+   * create an input problem description from the builder
+   * the returned pointer must be deleted with daestruct_input_delete
+   */
+  struct daestruct_input* daestruct_input_builder_build(struct daestruct_input_builder* problem);
 
   /**
    * set the maximum derivative of @variable in @equation in the given input problem

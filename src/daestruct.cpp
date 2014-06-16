@@ -27,6 +27,23 @@ extern "C" {
 
   using namespace daestruct::analysis;
 
+  void daestruct_input_builder_append(struct daestruct_input_builder* problem, int variable, int equation, int derivative) {
+    problem->insert_element(variable, equation, derivative);
+  }
+ 
+  struct daestruct_input_builder* daestruct_input_builder_create(int dimension) {
+    return static_cast<daestruct_input_builder*>(new coordinate_matrix<int> (dimension, dimension, 8*dimension));
+  }
+
+  void daestruct_input_builder_delete(struct daestruct_input_builder* problem) {
+    delete problem;
+  }
+  
+  struct daestruct_input* daestruct_input_builder_build(struct daestruct_input_builder* problem) {
+    return static_cast<daestruct_input*>(new InputProblem(*problem));
+  }
+
+
   void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative) {
     problem->sigma.insert(equation, variable, -derivative);
   }
