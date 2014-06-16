@@ -28,7 +28,7 @@ extern "C" {
   using namespace daestruct::analysis;
 
   void daestruct_input_builder_append(struct daestruct_input_builder* problem, int variable, int equation, int derivative) {
-    problem->insert_element(variable, equation, derivative);
+    problem->append_element(variable, equation, derivative);
   }
  
   struct daestruct_input_builder* daestruct_input_builder_create(int dimension) {

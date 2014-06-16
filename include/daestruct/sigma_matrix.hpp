@@ -48,13 +48,12 @@ namespace daestruct {
   public:
     int dimension;
 
-    sigma_matrix(const coordinate_matrix<int>& builder) : m(builder, builder.size1() * 5), dimension(builder.size1()) {
-      minimum_row.reserve(dimension);
+    sigma_matrix(const coordinate_matrix<int>& builder) : m(builder), dimension(builder.size1()) {
+      minimum_row.resize(dimension);
       rows.reserve(dimension);
-      for (int r = 0; r < dimension; r++)
-	rows.push_back(m.find1(0, r, 0));      
 
-      for (auto row_iter = rowBegin(); row_iter != rowEnd(); row_iter++)
+      for (auto row_iter = rowBegin(); row_iter != rowEnd(); row_iter++) {
+	rows.push_back(row_iter);      
 	for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
 	  const int i = col_iter.index1();
 	  const int j = col_iter.index2();
@@ -65,7 +64,7 @@ namespace daestruct {
 	    minimum_row.at(j) = i;
 	  }	  
 	}
-
+      }
     }
 
     sigma_matrix(int d) : m(d, d, 3*d), minimum_row(d), dimension(d) {
