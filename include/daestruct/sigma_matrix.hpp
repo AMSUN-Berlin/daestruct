@@ -24,7 +24,9 @@
 #include <iostream>
 #include <climits>
 #include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/vector_sparse.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/timer/timer.hpp>
 
 #define BIG (INT_MAX / 2)
 
@@ -38,81 +40,112 @@ namespace std {
 
 namespace daestruct {
   using namespace boost::numeric::ublas;
-    
+  using namespace std;
+
+  typedef int der_t;
+
+  class sigma_matrix;
+  
+  template<class E, class T> inline static void nicePrint(std::basic_ostringstream<E, T>& s, der_t val);
+
   class sigma_matrix {
-
-    compressed_matrix<int> m;
-    std::vector<int> minimum_row;
-    std::vector<compressed_matrix<int>::const_iterator1> rows;
-
   public:
-    int dimension;
 
-    sigma_matrix(const coordinate_matrix<int>& builder) : m(builder), dimension(builder.size1()) {
-      minimum_row.resize(dimension);
-      rows.reserve(dimension);
+    typedef mapped_vector<der_t, map_array<size_t, der_t>> row_t;
+    std::vector<size_t> minimum_row;
+    std::vector<row_t> _rows;
 
-      for (auto row_iter = rowBegin(); row_iter != rowEnd(); row_iter++) {
-	rows.push_back(row_iter);      
+    der_t* find_element(size_t i, size_t j) {
+      row_t& row = _rows.at(i);
+      return row.find_element(j);
+    }
+
+    const der_t* find_element(size_t i, size_t j) const {
+      const row_t& row = _rows.at(i);
+      return row.find_element(j);
+    }
+
+    sigma_matrix(const coordinate_matrix<der_t>& builder) : minimum_row(builder.size1()) {
+      _rows.reserve(builder.size1());
+
+      for (auto row_iter = builder.begin1(); row_iter != builder.end1(); row_iter++) {
+	row_t row(_rows.size());
 	for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
-	  const int i = col_iter.index1();
-	  const int j = col_iter.index2();
-	  const int x = *col_iter;
-	  const int* m_ptr = m.find_element(minimum_row[j],j);
+	  const size_t i = col_iter.index1();
+	  const size_t j = col_iter.index2();
+	  const der_t x = *col_iter;
+
+	  const der_t* m_ptr = find_element(minimum_row[j],j);
       
 	  if (!m_ptr || *m_ptr > x) {
 	    minimum_row.at(j) = i;
-	  }	  
+	  }
+	  row.insert_element(j, x);
 	}
+	_rows.push_back(row);
       }
     }
 
-    sigma_matrix(int d) : m(d, d, 3*d), minimum_row(d), dimension(d) {
-      rows.reserve(d);
-      for (int r = 0; r < d; r++)
-	rows.push_back(m.find1(0, r, 0));
+    sigma_matrix(size_t d) : minimum_row(d) {
+      _rows.reserve(d);
+      for (size_t i = 0; i < d; i++)
+	_rows.push_back(row_t(d));
     }
 
-    compressed_matrix<int>::const_iterator1 rowBegin() const {
-      return m.begin1();
+    sigma_matrix(size_t d, size_t nnzs) : minimum_row(d) {
+      for (size_t i = 0; i < d; i++)
+	_rows.push_back(row_t(d));
     }
 
-    compressed_matrix<int>::const_iterator1 rowEnd() const {
-      return m.end1();
+    const std::vector<row_t>& rows() const {
+      return _rows;
     }
 
-    compressed_matrix<int>::const_iterator1 findRow(int i) const {
-      return rows[i];
-    }
-
-    int smallest_cost_row(int column) const {
+    int smallest_cost_row(size_t column) const {
       return minimum_row[column];
     }    
 
-    const int operator()(const int i, const int j) const {
-      const int* ptr = m.find_element(i,j);
+    const int operator()(const size_t i, const size_t j) const {
+      const der_t* ptr = find_element(i,j);
       if (ptr)
 	return *ptr;
       else
 	return BIG;
     }
 
-    void insert(int i, int j, int x) {
-      const int* m_ptr = m.find_element(minimum_row[j],j);
+    void insert(size_t i, size_t j, der_t x) {
+      der_t* m_ptr = find_element(minimum_row[j],j);
       
       if (!m_ptr || *m_ptr > x) {
 	minimum_row.at(j) = i;
       }
       
-      int* ptr = m.find_element(i, j);
+      row_t& row = _rows.at(i);
+
+      der_t* ptr = row.find_element(j);
       if (!ptr) {
-	m.insert_element(i,j,x);
+	row.insert_element(j,x);
       } else {
 	*ptr = x;
       }
+
+      //std::cout << "after setting <" << i << "," << j << "> to " << x << std::endl;
+      //std::cout << *this << std::endl;
+    }
+
+    void push_back(size_t i, size_t j, der_t x) {
+      const der_t* m_ptr = find_element(minimum_row[j],j);
+      
+      if (!m_ptr || *m_ptr > x) {
+	minimum_row.at(j) = i;
+      }
+      
+      _rows.at(i).insert_element(j,x);
     }
   
-    template<class E, class T> inline static void nicePrint(std::basic_ostringstream<E, T>& s, int val) {
+    size_t dimension() const { return _rows.size(); }
+
+    template<class E, class T> inline static void nicePrint(std::basic_ostringstream<E, T>& s, der_t val) {
       if (val == BIG)
 	s << "∞";
       else
@@ -121,7 +154,7 @@ namespace daestruct {
 
     template<class E, class T> friend std::basic_ostream<E, T> &operator << (std::basic_ostream<E, T> &os,
 									     const sigma_matrix& sigma) {
-      const long d = sigma.dimension;
+      const size_t d = sigma.dimension();
     
       std::basic_ostringstream<E, T, std::allocator<E> > s;
       s.flags (os.flags ());

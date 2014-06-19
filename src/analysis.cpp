@@ -29,7 +29,7 @@
 namespace daestruct {
   namespace analysis {
   
-    void solveByFixedPoint(const std::vector<int>& assignment,  
+    void solveByFixedPoint(const std::vector<size_t>& assignment,  
 			   const sigma_matrix& sigma,
 			   std::vector<int>& c, std::vector<int>& d) {
       bool converged = false;
@@ -37,11 +37,11 @@ namespace daestruct {
       while (!converged) {
 	converged = true;
 	
-	for (auto row_iter = sigma.rowBegin(); row_iter != sigma.rowEnd(); row_iter++) {	      
-	  const int i = row_iter.index1();
+	for (auto row_iter = sigma.rows().cbegin(); row_iter != sigma.rows().cend(); row_iter++) {	      
+	  const size_t i = row_iter - sigma.rows().cbegin();
 
-	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
-	    const int j = col_iter.index2();
+	  for (auto col_iter = (*row_iter).begin(); col_iter != (*row_iter).end(); col_iter++) {
+	    const size_t j = col_iter.index();
 	    const int a = -1 * *col_iter + c[i];
 	    if (a > d[j]) {
 	      //std::cout << "d[" << j << "] = " << a << "(max row " << i << " = " << a << " > " << d[j] << ")" << std::endl; 
@@ -50,8 +50,8 @@ namespace daestruct {
 	  }
 	}
 
-	for (unsigned int i = 0; i < sigma.dimension; i++) {
-	  const int j = assignment[i];
+	for (size_t i = 0; i < sigma.dimension(); i++) {
+	  const size_t j = assignment[i];
 	  const int c2 = d[j] + sigma(i, j);
 	  
 	  if (c[i] != c2) {
@@ -107,15 +107,15 @@ namespace daestruct {
     sigma_matrix copy_defrag_noninflated(const sigma_matrix& compressed, const solution& comp_assignment,
 					 AnalysisResult& result, const compression& c) {
       sigma_matrix inflated ( result.row_assignment.size() );
-      int si = 0;
+      size_t si = 0;
       
-      for (auto row_iter = compressed.rowBegin(); row_iter != compressed.rowEnd(); row_iter++) {
-	const int i = row_iter.index1();
+      for (auto row_iter = compressed.rows().cbegin(); row_iter != compressed.rows().cend(); row_iter++) {
+	const size_t i = row_iter - compressed.rows().cbegin();
 
 	if (si >= c.instances.size() || i != c.instances[si].s) {
 	  /* copy row */
-	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
-	    inflated.insert(i - si, col_iter.index2(), *col_iter);
+	  for (auto col_iter = (*row_iter).begin(); col_iter != (*row_iter).end(); col_iter++)
+	    inflated.insert(i - si, col_iter.index(), *col_iter);
 	  
 	  /* copy assignment */
 	  result.row_assignment[i - si] = comp_assignment.rowsol[i];
@@ -139,22 +139,24 @@ namespace daestruct {
       for (const compressible_instance& inst : c.instances) {
 	/* which public variable does this component solve ? */
 	const int k = comp_assignment.rowsol[inst.s] - inst.q;
-	for (auto row_iter = inst.c->sigma.rowBegin(); row_iter.index1() < inst.c->p + 1; row_iter++)
-	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++) {
-	    const int i = row_iter.index1() + row_offset;
-	    const int j = 	    
-	      (col_iter.index2() >= inst.c->q) ?  // private variable
-	      col_iter.index2() + col_offset - inst.c->q
+	auto row_begin = inst.c->sigma.rows().cbegin();
+
+	for (auto row_iter = inst.c->sigma.rows().cbegin(); ((size_t)(row_iter - row_begin)) < inst.c->p + 1; row_iter++)
+	  for (auto col_iter = (*row_iter).begin(); col_iter != (*row_iter).end(); col_iter++) {
+	    const size_t i = (row_iter - row_begin) + row_offset;
+	    const size_t j = 	    
+	      (col_iter.index() >= inst.c->q) ?  // private variable
+	      col_iter.index() + col_offset - inst.c->q
 	      : 
-	      col_iter.index2() + inst.q; //public var
+	      col_iter.index() + inst.q; //public var
 	    ;	    
 	    inflated.insert(i, j, *col_iter);
 
 	    /* get the required matching */
-	    const std::vector<int>& M = inst.c->M[k];
+	    const std::vector<size_t>& M = inst.c->M[k];
 
 	    /* inflate matching as well */
-	    const int i_m = M.at(row_iter.index1());
+	    const size_t i_m = M.at(row_iter - row_begin);
 	    if (i_m >= inst.c->q) {
 	      result.row_assignment.at(i) = i_m + col_offset - inst.c->q;
 	      result.col_assignment.at(i_m + col_offset - inst.c->q) = i;
@@ -188,10 +190,10 @@ namespace daestruct {
       result.d.resize(dimension + c.variables());
 
       int cost = 0;
-      for (int i = 0; i < result.row_assignment.size(); i++)
+      for (size_t i = 0; i < result.row_assignment.size(); i++)
 	cost += inflated(i, result.row_assignment[i]);
 
-      int sizep = (100 * dimension) / inflated.dimension ;
+      int sizep = (100 * dimension) / inflated.dimension() ;
       std::cout << "Compressed (" << sizep << "%) LAP solved and inflated. Value is: " << cost << std::endl;
       
       solveByFixedPoint(result.row_assignment, inflated, result.c, result.d);
@@ -209,9 +211,10 @@ namespace daestruct {
     
     compressible::compressible(int pub_v, int pri_v, const sigma_matrix& s) : p(pri_v), q(pub_v), sigma(p+q) {
       // copy only the interesting parts, keeps memory requirements lower and (theoretically) saves time
-      for (auto row_iter = s.rowBegin(); row_iter != s.rowEnd() && row_iter.index1() < p+1; row_iter++)
-	for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
-	  sigma.insert(row_iter.index1(), col_iter.index2(), *col_iter);	
+      auto row_begin = s.rows().cbegin();
+      for (auto row_iter = row_begin; row_iter != s.rows().cend() && ((size_t)(row_iter - row_begin)) < p+1; row_iter++)
+	for (auto col_iter = (*row_iter).begin(); col_iter != (*row_iter).end(); col_iter++)
+	  sigma.insert(row_iter - row_begin, col_iter.index(), *col_iter);	
     }
 
     /**
@@ -220,26 +223,26 @@ namespace daestruct {
     compressible compressible_builder::build() {
       compressible compr(q, p, sigma);
 
-      for (int j = 0; j < q; j++) {
+      for (size_t j = 0; j < q; j++) {
 	/* prepare identity matrix for the remaining rows and public vars */
 	int s_row = p+1;
-	for (int pub_j = 0; pub_j < q; pub_j++) {
+	for (size_t pub_j = 0; pub_j < q; pub_j++) {
 	  if(pub_j != j) {
 	    sigma.insert(s_row++, pub_j, 0);	     
 	  }
 	}
 
 	solution sol = lap(sigma);
-	std::vector<int> M_i;
+	std::vector<size_t> M_i;
 	M_i.resize(p+1);
-	for (int i = 0; i < p+1; i++)
+	for (size_t i = 0; i < p+1; i++)
 	  M_i[i] = sol.rowsol[i];
 	compr.M.push_back(M_i);
 	compr.cost.push_back(sol.cost);
 
 	/* reset the identity matrix for the next run */
 	s_row = p+1;
-	for (int pub_j = 0; pub_j < q; pub_j++) {
+	for (size_t pub_j = 0; pub_j < q; pub_j++) {
 	  if(pub_j != j) {
 	    sigma.insert(s_row++, pub_j, BIG);	     
 	  }
@@ -260,7 +263,7 @@ namespace daestruct {
     }
 
     void compressible_instance::insert_incidence(sigma_matrix& sigma) const {
-      for (int j = 0; j < c->q; j++)
+      for (size_t j = 0; j < c->q; j++)
 	sigma.insert(s, j + q, c->cost[j]);
     }
 

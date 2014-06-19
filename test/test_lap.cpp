@@ -51,8 +51,8 @@ namespace daestruct {
       sigma.insert(2, 1, -3);
       sigma.insert(2, 2, -1);
 
-      std::vector<int> rowsol({-1, 0, 1});
-      std::vector<int> colsol({ 1, 2, -1});
+      std::vector<size_t> rowsol({BIG, 0, 1});
+      std::vector<size_t> colsol({ 1, 2, BIG});
 
       std::vector<int> u({ 0, 0, 0});
       std::vector<int> v({ -2, -3, 0});
@@ -60,8 +60,8 @@ namespace daestruct {
       solution assignment = delta_lap(sigma, u, v, rowsol, colsol);
       
       BOOST_CHECK_EQUAL( assignment.cost, -5 );
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,2,1}) );      
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,2,1}) );      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({0,2,1}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({0,2,1}) );      
     }
 
     void test_LAP_better_delta() {
@@ -82,8 +82,8 @@ namespace daestruct {
 
       solution assignment = lap(sigma);
       
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({1,0}) );
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({1,0}) );      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({1,0}) );
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({1,0}) );      
       BOOST_CHECK_EQUAL( assignment.cost, 4);
 
       sigma_matrix sigma2 ( 2 );
@@ -102,10 +102,10 @@ namespace daestruct {
       sigma2.insert(1, 0, 1);
       sigma2.insert(1, 1, 3);
 
-      solution delta_assignment = delta_lap(sigma2, assignment.u, assignment.v, std::vector<int>({1,-1}), std::vector<int>({-1,0}));
+      solution delta_assignment = delta_lap(sigma2, assignment.u, assignment.v, std::vector<size_t>({1, BIG}), std::vector<size_t>({BIG,0}));
 
-      BOOST_CHECK_EQUAL( delta_assignment.rowsol, std::vector<int>({0,1}) );
-      BOOST_CHECK_EQUAL( delta_assignment.colsol, std::vector<int>({0,1}) );      
+      BOOST_CHECK_EQUAL( delta_assignment.rowsol, std::vector<size_t>({0,1}) );
+      BOOST_CHECK_EQUAL( delta_assignment.colsol, std::vector<size_t>({0,1}) );      
       BOOST_CHECK_EQUAL( delta_assignment.cost, 3);
     }
 
@@ -133,8 +133,8 @@ namespace daestruct {
       sigma.insert(2, 1, 3);
       sigma.insert(2, 2, 1);
 
-      std::vector<int> rowsol({-1, 0, 1});
-      std::vector<int> colsol({ 1, 2, -1});
+      std::vector<size_t> rowsol({BIG, 0, 1});
+      std::vector<size_t> colsol({ 1, 2, BIG});
 
       std::vector<int> u({ 0, 0, 0});
       std::vector<int> v({ 2, 3, 0});
@@ -142,8 +142,8 @@ namespace daestruct {
       solution assignment = delta_lap(sigma, u, v, rowsol, colsol);
       
       BOOST_CHECK_EQUAL( assignment.cost, 4 );
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({1,0,2}) );      
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({1,0,2}) );      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({1,0,2}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({1,0,2}) );      
     }
     
     void test_LAP_taxi_example() {
@@ -182,20 +182,20 @@ namespace daestruct {
 
       solution assignment = lap(sigma);
 
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,2,3,1,4}) );      
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,3,1,2,4}) );
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({0,2,3,1,4}) );      
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({0,3,1,2,4}) );
 
-      std::vector<int> partial_r(assignment.rowsol);
-      std::vector<int> partial_c(assignment.colsol);
+      std::vector<size_t> partial_r(assignment.rowsol);
+      std::vector<size_t> partial_c(assignment.colsol);
       std::vector<int> u(assignment.u);
       std::vector<int> v(assignment.v);
 
-      partial_r[0] = -1;
-      partial_c[0] = -1;
+      partial_r[0] = BIG;
+      partial_c[0] = BIG;
       solution assignment2 = delta_lap(sigma, u, v, partial_r, partial_c);
 
-      BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<int>({0,2,3,1,4}) );      
-      BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<int>({0,3,1,2,4}) );
+      BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<size_t>({0,2,3,1,4}) );      
+      BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<size_t>({0,3,1,2,4}) );
 
     }
 
@@ -224,8 +224,8 @@ namespace daestruct {
 
       solution assignment = lap(sigma);
       
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,1,2,3,4}) );
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,1,2,3,4}) );      
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({0,1,2,3,4}) );      
     }
     
     void test_LAP_on_identity() {
@@ -239,29 +239,29 @@ namespace daestruct {
 
       solution assignment = lap(sigma);
       
-      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<int>({0,1,2,3,4}) );
-      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<int>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment.rowsol, std::vector<size_t>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment.colsol, std::vector<size_t>({0,1,2,3,4}) );
       
-      std::vector<int> partial_r(assignment.rowsol);
-      std::vector<int> partial_c(assignment.colsol);
+      std::vector<size_t> partial_r(assignment.rowsol);
+      std::vector<size_t> partial_c(assignment.colsol);
       std::vector<int> u(assignment.u);
       std::vector<int> v(assignment.v);
 
-      partial_r[2] = -1;
-      partial_c[2] = -1;
+      partial_r[2] = BIG;
+      partial_c[2] = BIG;
       solution assignment2 = delta_lap(sigma, u, v, partial_r, partial_c);
 
-      BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<int>({0,1,2,3,4}) );
-      BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<int>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment2.rowsol, std::vector<size_t>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment2.colsol, std::vector<size_t>({0,1,2,3,4}) );
 
       u = assignment2.u;
       v = assignment2.v;
-      partial_r[1] = -1;
-      partial_c[1] = -1;
+      partial_r[1] = BIG;
+      partial_c[1] = BIG;
       solution assignment3 = delta_lap(sigma, u, v, partial_r, partial_c);
 
-      BOOST_CHECK_EQUAL( assignment3.rowsol, std::vector<int>({0,1,2,3,4}) );
-      BOOST_CHECK_EQUAL( assignment3.colsol, std::vector<int>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment3.rowsol, std::vector<size_t>({0,1,2,3,4}) );
+      BOOST_CHECK_EQUAL( assignment3.colsol, std::vector<size_t>({0,1,2,3,4}) );
     }
   }
 }

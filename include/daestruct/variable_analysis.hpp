@@ -47,12 +47,12 @@ namespace daestruct {
     private:
       void applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta);
     public:
-      int old_columns;
-      int old_rows;
-      int dimension;
+      size_t old_columns;
+      size_t old_rows;
+      size_t dimension;
       sigma_matrix sigma;
-      std::vector<int> row_assignment;
-      std::vector<int> col_assignment;
+      std::vector<size_t> row_assignment;
+      std::vector<size_t> col_assignment;
       std::vector<int> dual_columns;
       std::vector<int> dual_rows;
       std::vector<bool> row_changed;

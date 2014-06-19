@@ -54,12 +54,27 @@ extern "C" {
    * set the maximum derivative of @variable in @equation in the given input problem
    */
   void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative);
+
+  /**
+   * set the maximum derivative of @variable in @equation in the given input problem
+   * This method needs to be called in order, i.e. the <variable, equation> indices must
+   * be strictly larger on each usage.
+   */
+  void daestruct_input_push_back(struct daestruct_input* problem, int variable, int equation, int derivative);
  
   /**
    * create an input problem description for the structural analysis
    * the returned pointer must be deleted with daestruct_input_delete
    */
   struct daestruct_input* daestruct_input_create(int dimension);
+
+  /**
+   * create an input problem description for the structural analysis
+   * This variant allocates enough space for the given number of 
+   * elements that will be set 
+   * the returned pointer must be deleted with daestruct_input_delete
+   */
+  struct daestruct_input* daestruct_input_allocate(int dimension, int nonzeros);
 
   /**
    * delete a daestruct input problem

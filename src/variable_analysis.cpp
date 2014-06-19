@@ -21,6 +21,7 @@
 
 #include <boost/icl/interval.hpp>
 #include <boost/icl/interval_map.hpp>
+#include <boost/timer/timer.hpp>
 #include <prettyprint.hpp>
 #include "lap.hpp"
 
@@ -90,22 +91,25 @@ using namespace boost::icl;
     }
 
     void ChangedProblem::applyDiff(const sigma_matrix& oldSigma, const AnalysisResult& result, const StructChange& delta) {
-      row_assignment.resize(dimension, -1);
-      col_assignment.resize(dimension, -1);
-      dual_columns.resize(dimension, -1);
-      dual_rows.resize(dimension, -1);
+      //std::cout << "ApplyDiff..." << std::endl;
+      //boost::timer::auto_cpu_timer t;
+
+      row_assignment.resize(dimension, BIG);
+      col_assignment.resize(dimension, BIG);
+      dual_columns.resize(dimension, BIG);
+      dual_rows.resize(dimension, BIG);
       
       for (int removed : delta.deletedCols)
-	colOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension), -1);
+	colOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension()), -1);
 
       for (int removed : delta.deletedRows)
-	rowOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension), -1);
+	rowOffsets += make_pair(interval<int>::closed(removed, oldSigma.dimension()), -1);
 
-      for (auto row_iter = oldSigma.rowBegin(); row_iter != oldSigma.rowEnd(); row_iter++) {
-	const int orig_row = row_iter.index1();
+      for (auto row_iter = oldSigma.rows().cbegin(); row_iter != oldSigma.rows().cend(); row_iter++) {
+	const int orig_row = row_iter - oldSigma.rows().cbegin();
 	const int row = orig_row + rowOffsets(orig_row);
 
-	if (delta.deletedRows.count(row_iter.index1()) == 0) {
+	if (delta.deletedRows.count(orig_row) == 0) {
 	  dual_rows[row] = result.c[orig_row];
 
 	  const int orig_assign_col = result.row_assignment[orig_row];
@@ -118,9 +122,9 @@ using namespace boost::icl;
 	    row_assignment[row] = -1;
 
 	  /* insert row from original matrix */
-	  for (auto col_iter = row_iter.begin(); col_iter != row_iter.end(); col_iter++)
-	    if (delta.deletedCols.count(col_iter.index2()) == 0) {
-	      const int orig_col = col_iter.index2();
+	  for (auto col_iter = (*row_iter).begin(); col_iter != (*row_iter).end(); col_iter++)
+	    if (delta.deletedCols.count(col_iter.index()) == 0) {
+	      const int orig_col = col_iter.index();
 	      const int column = orig_col + colOffsets(orig_col);
 	      /* insert column value from original matrix */
 	      sigma.insert(row, column, *col_iter);
@@ -128,10 +132,10 @@ using namespace boost::icl;
 	}
       }
      
-      for (int j = 0; j < result.d.size(); j++)
+      for (size_t j = 0; j < result.d.size(); j++)
 	dual_columns[j + colOffsets(j)] = -result.d.at(j);
 
-      for (int i = 0; i < delta.newRows.size(); i++) {
+      for (size_t i = 0; i < delta.newRows.size(); i++) {
 	const NewRow& nrow = delta.newRows[i];
 	//std::cout << "Adding new row " << i << " to " << (old_rows + i) << std::endl;
 	for (const std::pair<int, int>& p : nrow.ex_vars) {

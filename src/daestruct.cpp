@@ -22,6 +22,7 @@
 #include <daestruct/analysis.hpp>
 #include <daestruct/sigma_matrix.hpp>
 #include <daestruct/c_cpp_interface.hpp>
+#include <boost/timer/timer.hpp>
 
 extern "C" {
 
@@ -32,7 +33,7 @@ extern "C" {
   }
  
   struct daestruct_input_builder* daestruct_input_builder_create(int dimension) {
-    return static_cast<daestruct_input_builder*>(new coordinate_matrix<int> (dimension, dimension, 8*dimension));
+    return static_cast<daestruct_input_builder*>(new coordinate_matrix<daestruct::der_t> (dimension, dimension, 8*dimension));
   }
 
   void daestruct_input_builder_delete(struct daestruct_input_builder* problem) {
@@ -43,13 +44,20 @@ extern "C" {
     return static_cast<daestruct_input*>(new InputProblem(*problem));
   }
 
-
+  void daestruct_input_push_back(struct daestruct_input* problem, int variable, int equation, int derivative) {
+    problem->sigma.push_back(equation, variable, -derivative);
+  }
+  
   void daestruct_input_set(struct daestruct_input* problem, int variable, int equation, int derivative) {
     problem->sigma.insert(equation, variable, -derivative);
   }
  
   struct daestruct_input* daestruct_input_create(int dimension) {
     return static_cast<daestruct_input*>(new InputProblem(dimension));
+  }
+
+  struct daestruct_input* daestruct_input_allocate(int dimension, int nonzeros) {
+    return static_cast<daestruct_input*>(new InputProblem(dimension, nonzeros));
   }
 
   void daestruct_input_delete(struct daestruct_input* problem) {

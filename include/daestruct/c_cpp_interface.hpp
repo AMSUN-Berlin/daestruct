@@ -27,7 +27,7 @@
 using namespace daestruct::analysis;
 using namespace boost::numeric::ublas;
 
-struct daestruct_input_builder : public coordinate_matrix<int> {};
+struct daestruct_input_builder : public coordinate_matrix<daestruct::der_t> {};
 
 struct daestruct_input : public InputProblem {};
 

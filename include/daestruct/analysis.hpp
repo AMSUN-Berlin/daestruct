@@ -30,7 +30,7 @@ namespace daestruct {
 
     using namespace std;
 
-    void solveByFixedPoint(const std::vector<int>& assignment,  
+    void solveByFixedPoint(const std::vector<size_t>& assignment,  
 			   const sigma_matrix& sigma,
 			   std::vector<int>& c, std::vector<int>& d);
 
@@ -45,8 +45,8 @@ namespace daestruct {
     };
 
     struct AnalysisResult {
-      std::vector<int> row_assignment;
-      std::vector<int> col_assignment;
+      std::vector<size_t> row_assignment;
+      std::vector<size_t> col_assignment;
       
       std::vector<int> c;
       std::vector<int> d;
@@ -65,12 +65,12 @@ namespace daestruct {
      * X = {0 .. p}
      */
     struct compressible {
-      int p;
-      int q;
+      size_t p;
+      size_t q;
 
       sigma_matrix sigma; //represents D and d as well
 
-      typedef std::vector<std::vector<int>> assignment_permutations;
+      typedef std::vector<std::vector<size_t>> assignment_permutations;
 
       /* M_q in the form of row-assignments */
       assignment_permutations M;
@@ -86,8 +86,8 @@ namespace daestruct {
      * A compressible sub-component builder
      */
     struct compressible_builder {
-      int p;
-      int q;
+      size_t p;
+      size_t q;
 
       //TODO: replace this with a better suited matrix, 
       //every row from p+1 .. p+q will be full in the end
@@ -116,11 +116,11 @@ namespace daestruct {
     };
 
     struct compressible_instance {
-      int q; /* offset of the first public variable in the compressed matrix */
-      int s; /* the surrogat equation */    
+      size_t q; /* offset of the first public variable in the compressed matrix */
+      size_t s; /* the surrogat equation */    
       compressible* c;
 
-      compressible_instance(int qv, int se, compressible* comp) : q(qv), s(se), c(comp) {}
+      compressible_instance(size_t qv, size_t se, compressible* comp) : q(qv), s(se), c(comp) {}
 
       void insert_incidence(sigma_matrix& sigma) const;
     };
@@ -135,9 +135,11 @@ namespace daestruct {
       int dimension;
       sigma_matrix sigma;
   
-      InputProblem(const coordinate_matrix<int>& builder) : dimension(builder.size1()), sigma(builder) {}
+      InputProblem(const coordinate_matrix<der_t>& builder) : dimension(builder.size1()), sigma(builder) {}
 
       InputProblem(int d) : dimension(d), sigma(d) {}
+
+      InputProblem(int d, int nnzs) : dimension(d), sigma(d, nnzs) {}
 
       AnalysisResult pryceAlgorithm() const;
     
