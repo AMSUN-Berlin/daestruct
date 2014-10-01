@@ -40,10 +40,10 @@ cartesian pendulum using the C-interface (for full code, see example/pendulum.c)
   const char* equations[] = {"x² + y² = 1", "xF = der(der(x))", "yF = der(der(y)) - g" };
 
   for (int v = 0; v < dimension; v++)
-    printf("'%s' needs to be derived %d times\n", variables[v], daestruct_result_variable_index(result, v));
+    printf("'%s' needs to be differentiated %d times\n", variables[v], daestruct_result_variable_index(result, v));
 
   for (int eq = 0; eq < dimension; eq++)
-    printf("'%s' needs to be derived %d times\n", equations[eq], daestruct_result_equation_index(result, eq));
+    printf("'%s' needs to be differentiated %d times\n", equations[eq], daestruct_result_equation_index(result, eq));
 
   daestruct_input_delete(pendulum);
   daestruct_result_delete(result);
